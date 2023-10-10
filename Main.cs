@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Drawing;
 using System.Windows.Forms;
 using OneDrive;
 using OneDrive.OdSyncService;
@@ -19,8 +17,8 @@ namespace UserDataBackup {
         }
         private void Main_Load(object sender, EventArgs e) {
             if (!Directory.Exists(Program.OneDriveRoot)) {
-                backup.Enabled = false;
-                restore.Enabled = false;
+                Backup.Enabled = false;
+                Restore.Enabled = false;
                 statusLabel.Text = "This version of User Data Management is intended for OneDrive only.";
                 statusImage.Image = Properties.Resources.OneDriveError;
                 statusImage.Refresh();
@@ -107,11 +105,11 @@ namespace UserDataBackup {
             statusImage.Refresh();
         }
 
-        private void backup_Click(object sender, EventArgs e) {
+        private void Backup_Click(object sender, EventArgs e) {
             RunBackup();
         }
 
-        private void restore_Click(object sender, EventArgs e) {
+        private void Restore_Click(object sender, EventArgs e) {
             RunRestore();
         }
     }

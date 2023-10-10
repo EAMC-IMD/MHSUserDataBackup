@@ -133,5 +133,15 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\System.Security.Principal.Windows.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ChromiumBookmarkManager\ChromiumBookmarkManager.csproj">
+      <Project>{8d38d804-1b60-4da5-b81a-ef45812e26e8}</Project>
+      <Name>ChromiumBookmarkManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="OneDrive\OneDrive.csproj">
+      <Project>{1dfde3ce-fb18-4b00-bb8d-d7db93403a1c}</Project>
+      <Name>OneDrive</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

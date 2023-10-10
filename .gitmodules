@@ -1,0 +1,6 @@
+[submodule "OneDrive"]
+	path = OneDrive
+	url = https://github.com/sapph42/ODSyncService
+[submodule "ChromiumBookmarkManager"]
+	path = ChromiumBookmarkManager
+	url = https://github.com/sapph42/ChromiumBookmarkManager

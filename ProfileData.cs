@@ -153,6 +153,11 @@ namespace UserDataBackup {
             BackupAsUType();
         }
         public bool Restore() {
+            if (!Directory.Exists(BackupRoot)) {
+                if (!Directory.Exists(Properties.Resources.OldBackup))
+                    return false;
+                //MIGRATE SPECIFIC BACKUPS FROM OldBackup to BackupRoot
+            }
             RestoreChrome();
             RestoreFirefox();
             RestoreEdge();

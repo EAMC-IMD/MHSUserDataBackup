@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Linq;
-using System.IO;
-using System.Diagnostics;
+
 
 namespace UserDataBackup {
     static class Program {
 
-        public readonly static string UserFolderRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        public readonly static string OneDriveRoot = $@"{UserFolderRoot}\OneDrive - militaryhealth";
-        public readonly static string BackupRoot = $@"{OneDriveRoot}\Backup";
+        public static readonly string UserFolderRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        public static readonly string OneDriveRoot = $@"{UserFolderRoot}\OneDrive - militaryhealth";
+        public static readonly string BackupRoot = $@"{OneDriveRoot}\Backup";
 
         static Program() {
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            _ = Assembly.Load(Properties.Resources.SapphTools_BookmarkManager_Chromium);
+            _ = Assembly.Load(Properties.Resources.Newtonsoft_Json);
+            _ = Assembly.Load(Properties.Resources.OneDrive);
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
         /// <summary>
         /// The main entry point for the application.
@@ -26,18 +28,21 @@ namespace UserDataBackup {
         }
 
         static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            if (args.Name is null)
-                throw new NullReferenceException("Item name is null and could not be resolved.");
-            if (!executingAssembly.GetManifestResourceNames().Contains("Many_Objects_Display.Resources." + new AssemblyName(args.Name).Name.Replace(".resources", ".dll")))
-                throw new ArgumentException("Resource name does not exist.");
-            Stream resourceStream = executingAssembly.GetManifestResourceStream("Many_Objects_Display.Resources." + new AssemblyName(args.Name).Name.Replace(".resources", ".dll")) ?? throw new NullReferenceException("Resource stream is null.");
-            if (resourceStream.Length > 104857600)
-                throw new ArgumentException("Exceedingly long resource - greater than 100MB. Aborting ...");
-            byte[] block = new byte[resourceStream.Length];
-            resourceStream.Read(block, 0, block.Length);
-            Assembly resourceAssembly = Assembly.Load(block) ?? throw new NullReferenceException("Assembly is a null value.");
-            return resourceAssembly;
+            switch (args.Name) {
+                case "OneDrive.resources, Version=1.0.0.0, Culture=en-US, PublicKeyToken=null":
+                case "OneDrive, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null":
+                case "OneDrive.resources, Version=1.0.0.0, Culture=en, PublicKeyToken=null":
+                    return Assembly.Load(Properties.Resources.OneDrive);
+                case "SapphTools_BookmarkManager_Chromium.resources, Version=1.0.0.0, Culture=en-US, PublicKeyToken=null":
+                case "SapphTools_BookmarkManager_Chromium, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null":
+                    return Assembly.Load(Properties.Resources.SapphTools_BookmarkManager_Chromium);
+                case "Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed":
+                    return Assembly.Load(Properties.Resources.Newtonsoft_Json);
+                //case "UserDataManagement.resources, Version=2.1.2.0, Culture=en-US, PublicKeyToken=null":
+                //    return Assembly.Load(Properties);
+                default:
+                    throw new NullReferenceException("Unknown assembly.");
+            }
         }
     }
 }

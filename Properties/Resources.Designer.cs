@@ -19,7 +19,7 @@ namespace UserDataBackup.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,12 +61,11 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized string similar to true.
         /// </summary>
-        internal static byte[] ChromiumBookmarkManager {
+        internal static string DecentralizeAUT {
             get {
-                object obj = ResourceManager.GetObject("ChromiumBookmarkManager", resourceCulture);
-                return ((byte[])(obj));
+                return ResourceManager.GetString("DecentralizeAUT", resourceCulture);
             }
         }
         
@@ -101,7 +100,7 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to H:\BACKUP.
         /// </summary>
         internal static string OldBackup {
             get {
@@ -110,22 +109,22 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static System.Drawing.Bitmap onedrive {
+        internal static byte[] OneDrive {
             get {
-                object obj = ResourceManager.GetObject("onedrive", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("OneDrive", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static byte[] OneDrive1 {
+        internal static System.Drawing.Bitmap onedrive_base {
             get {
-                object obj = ResourceManager.GetObject("OneDrive1", resourceCulture);
-                return ((byte[])(obj));
+                object obj = ResourceManager.GetObject("onedrive_base", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -136,6 +135,16 @@ namespace UserDataBackup.Properties {
             get {
                 object obj = ResourceManager.GetObject("OneDriveError", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] SapphTools_BookmarkManager_Chromium {
+            get {
+                object obj = ResourceManager.GetObject("SapphTools_BookmarkManager_Chromium", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
@@ -156,26 +165,6 @@ namespace UserDataBackup.Properties {
             get {
                 object obj = ResourceManager.GetObject("SyncInPrgress", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] System_Diagnostics_EventLog {
-            get {
-                object obj = ResourceManager.GetObject("System_Diagnostics_EventLog", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] System_Security_Principal_Windows {
-            get {
-                object obj = ResourceManager.GetObject("System_Security_Principal_Windows", resourceCulture);
-                return ((byte[])(obj));
             }
         }
     }

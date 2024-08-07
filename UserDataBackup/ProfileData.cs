@@ -176,6 +176,23 @@ namespace UserDataBackup {
                 CopyDir($@"{Properties.Resources.OldBackup}\npp", $@"{BackupRoot}\npp", null, false);
             }
         }
+        private void KillProcessTree(string ProcessName) {
+            if (ProcessName == null)
+                return;
+            foreach (Process process in Process.GetProcessesByName(ProcessName)) {
+                try {
+                    if (!process.HasExited) {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+                } catch { }
+            }
+        }
+        private void KillProcessTree(string[] ProcessNames) {
+            foreach (string ProcessName in ProcessNames) { 
+                KillProcessTree(ProcessName); 
+            }
+        }
         public void Backup() {
             BackupChrome();
             BackupEdge();
@@ -208,14 +225,7 @@ namespace UserDataBackup {
                 return;
             if (!target.Backup_Bookmark_File.Directory.Exists)
                 target.Backup_Bookmark_File.Directory.Create();
-            foreach (Process process in Process.GetProcessesByName(target.ProcessName)) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree(target.ProcessName);
             target.Live_Bookmark_File.CopyTo(target.Backup_Path, true);
         }
         private void BackupChrome() {
@@ -229,14 +239,7 @@ namespace UserDataBackup {
                 return;
             if (!Directory.Exists(firefox.Backup_Path))
                 Directory.CreateDirectory(firefox.Backup_Path);
-            foreach (Process process in Process.GetProcessesByName(firefox.ProcessName)) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree(firefox.ProcessName);
             CopyDir(firefox.Bookmark_Path, firefox.Backup_Path, true);
         }
         private void BackupStickyNotes() {
@@ -247,14 +250,7 @@ namespace UserDataBackup {
             if (!stickyBackup.Directory.Exists) {
                 stickyBackup.Directory.Create();
             }
-            foreach (Process process in Process.GetProcessesByName("Microsoft.Notes")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree("Microsoft.Notes");
             ((FileInfo)thisTarget.CheckPath).CopyTo(stickyBackup.FullName, true);
         }
         private void BackupSignatures() {
@@ -264,14 +260,7 @@ namespace UserDataBackup {
             DirectoryInfo sigBackup = new DirectoryInfo($@"{BackupRoot}\Signatures");
             if (!sigBackup.Exists)
                 Directory.CreateDirectory(sigBackup.FullName);
-            foreach (Process process in Process.GetProcessesByName("OUTLOOK")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree("OUTLOOK");
             CopyDir(thisTarget.CheckPath.FullName, sigBackup.FullName, true);
         }
         private void BackupAsUType() {
@@ -280,22 +269,7 @@ namespace UserDataBackup {
                 return;
             if (!Directory.Exists($@"{BackupRoot}\AsUType"))
                 Directory.CreateDirectory($@"{BackupRoot}\AsUType");
-            foreach (Process process in Process.GetProcessesByName("AsutypePro32")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
-            foreach (Process process in Process.GetProcessesByName("AsutypePro64")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree(new string[] { "AsutypePro32", "AsutypePro64" });
             string[] config = File.ReadAllLines($@"{localappdata}\Fanix\Asutype Professional\asutype.config", System.Text.Encoding.Unicode);
             string user = Environment.UserName;
             List<string> globalSpellers = new List<string> {
@@ -379,14 +353,7 @@ namespace UserDataBackup {
                 nppBackup.Directory.Create();
                 Directory.CreateDirectory(fileTarget);
             }
-            foreach (Process process in Process.GetProcessesByName("notepad++")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree("notepad++");
             ((FileInfo)thisTarget.CheckPath).CopyTo(nppBackup.FullName, true);
             CopyDir($@"{appdata}\Notepad++\backup", fileTarget, false);
         }
@@ -394,51 +361,71 @@ namespace UserDataBackup {
             BackupTarget local = Targets[target.IndexName];
             if (!target.Backup_Bookmark_File.Exists) {
                 local.RestoreResult = RestoreResult.NoBackupExists;
+                RestoreResults[target.IndexName] = RestoreResult.NoBackupExists;
                 Targets[target.IndexName] = local;
                 return;
             }
             if (!target.Live_Bookmark_File.Directory.Exists) {
                 local.RestoreResult = RestoreResult.NoNewProfile;
+                RestoreResults[target.IndexName] = RestoreResult.NoNewProfile;
                 Targets[target.IndexName] = local;
                 return;
             }
             if (!target.Live_Bookmark_File.Exists) {
-                foreach (Process process in Process.GetProcessesByName(target.ProcessName)) {
+                KillProcessTree(target.ProcessName);
+                try {
+                    target.Backup_Bookmark_File.CopyTo(target.Bookmark_Path);
+                } catch (IOException) {
+                    KillProcessTree(target.ProcessName);
                     try {
-                        if (!process.HasExited) {
-                            process.Kill();
-                            process.WaitForExit();
-                        }
-                    } catch { }
+                        target.Backup_Bookmark_File.CopyTo(target.Bookmark_Path);
+                    } catch (IOException) {
+                        local.RestoreResult = RestoreResult.MergeFailed;
+                        RestoreResults[target.IndexName] = RestoreResult.MergeFailed;
+                        Targets[target.IndexName] = local;
+                        return;
+                    }
                 }
-                target.Backup_Bookmark_File.CopyTo(target.Bookmark_Path);
+                local.RestoreResult = RestoreResult.RestoreComplete;
                 RestoreResults[target.IndexName] = RestoreResult.RestoreComplete;
+                Targets[target.IndexName] = local;
                 return;
             }
             BookmarkFile live = new BookmarkFile(target.Bookmark_Path);
             BookmarkFile backup = new BookmarkFile(target.Backup_Path);
-            foreach (Process process in Process.GetProcessesByName(target.ProcessName)) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree(target.ProcessName);
             try {
                 if (!live.Merge(backup, out BookmarkFile merge)) {
                     RestoreResults[target.IndexName] = RestoreResult.MergeFailed;
                     return;
                 }
-                merge.WriteFile(live.FilePath);
-                FileInfo live_bookmarkbackup = new FileInfo(target.LiveBackup_Path);
-                live_bookmarkbackup.Delete();
-                local.RestoreResult = RestoreResult.RestoreComplete;
+                try {
+                    merge.WriteFile(live.FilePath);
+                    FileInfo live_bookmarkbackup = new FileInfo(target.LiveBackup_Path);
+                    live_bookmarkbackup.Delete();
+                } catch (IOException) {
+                    KillProcessTree(target.ProcessName);
+                    try {
+                        merge.WriteFile(live.FilePath);
+                        FileInfo live_bookmarkbackup = new FileInfo(target.LiveBackup_Path);
+                        live_bookmarkbackup.Delete();
+                    } catch (IOException) {
+                        local.RestoreResult = RestoreResult.MergeFailed;
+                        RestoreResults[target.IndexName] = RestoreResult.MergeFailed;
+                        Targets[target.IndexName] = local;
+                        return;
+                    }
+                }
             } catch {
                 local.RestoreResult = RestoreResult.MergeFailed;
-            } finally {
+                RestoreResults[target.IndexName] = RestoreResult.MergeFailed;
                 Targets[target.IndexName] = local;
+                return;
             }
+            local.RestoreResult = RestoreResult.RestoreComplete;
+            RestoreResults[target.IndexName] = RestoreResult.RestoreComplete;
+            Targets[target.IndexName] = local;
+            return;
         }
         private void RestoreChrome() {
             RestoreChromium(chrome);
@@ -455,16 +442,23 @@ namespace UserDataBackup {
             }
             if (!Directory.Exists(firefox.Bookmark_Path))
                 Directory.CreateDirectory(firefox.Bookmark_Path);
-            foreach (Process process in Process.GetProcessesByName(firefox.ProcessName)) {
+            KillProcessTree(firefox.ProcessName);
+            try {
+                CopyDir(firefox.Backup_Path, firefox.Bookmark_Path, true);
+            } catch (IOException) {
+                KillProcessTree(firefox.ProcessName);
                 try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
+                    CopyDir(firefox.Backup_Path, firefox.Bookmark_Path, true);
+                } catch (IOException) {
+                    local.RestoreResult = RestoreResult.MergeFailed;
+                    RestoreResults[firefox.IndexName] = RestoreResult.MergeFailed;
+                    Targets[firefox.IndexName] = local;
+                    return;
+                }
             }
-            CopyDir(firefox.Backup_Path, firefox.Bookmark_Path, true);
+
             local.RestoreResult = RestoreResult.RestoreComplete;
+            RestoreResults[firefox.IndexName] = RestoreResult.RestoreComplete;
             Targets[firefox.IndexName] = local;
         }
         private void RestoreStickyNotes() {
@@ -478,16 +472,23 @@ namespace UserDataBackup {
             }
             if (!Directory.Exists(stickyfile.Directory.FullName))
                 Directory.CreateDirectory(stickyfile.Directory.FullName);
-            foreach (Process process in Process.GetProcessesByName("Microsoft.Notes")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
             stickyBackup.CopyTo(stickyfile.FullName, true);
+            KillProcessTree("Microsoft.Notes");
+            try {
+                stickyBackup.CopyTo(stickyfile.FullName, true);
+            } catch (IOException) {
+                KillProcessTree("Microsoft.Notes");
+                try {
+                    stickyBackup.CopyTo(stickyfile.FullName, true);
+                } catch (IOException) {
+                    local.RestoreResult = RestoreResult.MergeFailed;
+                    RestoreResults["StickyNotes"] = RestoreResult.MergeFailed;
+                    Targets["StickyNotes"] = local;
+                    return;
+                }
+            }
             local.RestoreResult = RestoreResult.RestoreComplete;
+            RestoreResults["StickyNotes"] = RestoreResult.RestoreComplete;
             Targets["StickyNotes"] = local;
         }
         private void RestoreSignatures() {
@@ -501,17 +502,25 @@ namespace UserDataBackup {
             }
             if (!sigFolder.Exists)
                 Directory.CreateDirectory(sigFolder.FullName);
-            foreach (Process process in Process.GetProcessesByName("OUTLOOK")) {
+            KillProcessTree("OUTLOOK");
+            try {
+                CopyDir(sigBackup.FullName, sigFolder.FullName, true);
+                local.RestoreResult = RestoreResult.RestoreComplete;
+            } catch (IOException) {
+                KillProcessTree("OUTLOOK");
                 try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
+                    CopyDir(sigBackup.FullName, sigFolder.FullName, true);
+                    local.RestoreResult = RestoreResult.RestoreComplete;
+                } catch (IOException) {
+                    RestoreResults["Outlook Signatures"] = RestoreResult.MergeFailed;
+                    local.RestoreResult = RestoreResult.MergeFailed;
+                    Targets["Outlook Signatures"] = local;
+                    return;
+                }
             }
-            CopyDir(sigBackup.FullName, sigFolder.FullName, true);
             local.RestoreResult = RestoreResult.RestoreComplete;
             Targets["Outlook Signatures"] = local;
+            RestoreResults["Outlook Signatures"] = RestoreResult.RestoreComplete;
         }
         private void RestoreAsUType() {
             BackupTarget local = Targets["AsUType"];
@@ -522,33 +531,29 @@ namespace UserDataBackup {
             }
             if (!Directory.Exists($@"{localappdata}\Fanix\Asutype Professional\"))
                 Directory.CreateDirectory($@"{localappdata}\Fanix\Asutype Professional\");
-            foreach (Process process in Process.GetProcessesByName("AsutypePro32")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
-            foreach (Process process in Process.GetProcessesByName("AsutypePro64")) {
-                try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                } catch { }
-            }
+            KillProcessTree(new string[] { "AsutypePro32", "AsutypePro64" });
             try {
                 CopyDir($@"{BackupRoot}\AsUType", @"C:\Users\Public\Documents\Fanix\Asutype Professional", "*.correction", false);
                 CopyDir($@"{BackupRoot}\AsUType", @"C:\Users\Public\Documents\Fanix\Asutype Professional", "*.shortcut", false);
                 CopyDir($@"{BackupRoot}\AsUType", @"C:\Users\Public\Documents\Fanix\Asutype Professional", "*.spelling", false);
                 File.Copy($@"{BackupRoot}\AsUType\asutype.config", $@"{localappdata}\Fanix\Asutype Professional\asutype.config", true);
-                local.RestoreResult = RestoreResult.RestoreComplete;
-                Targets["AsUType"] = local;
-            } catch {
-                local.RestoreResult = RestoreResult.MergeFailed;
-                Targets["AsUType"] = local;
+            } catch (IOException) {
+                KillProcessTree(new string[] { "AsutypePro32", "AsutypePro64" });
+                try {
+                    CopyDir($@"{BackupRoot}\AsUType", @"C:\Users\Public\Documents\Fanix\Asutype Professional", "*.correction", false);
+                    CopyDir($@"{BackupRoot}\AsUType", @"C:\Users\Public\Documents\Fanix\Asutype Professional", "*.shortcut", false);
+                    CopyDir($@"{BackupRoot}\AsUType", @"C:\Users\Public\Documents\Fanix\Asutype Professional", "*.spelling", false);
+                    File.Copy($@"{BackupRoot}\AsUType\asutype.config", $@"{localappdata}\Fanix\Asutype Professional\asutype.config", true);
+                } catch {
+                    local.RestoreResult = RestoreResult.MergeFailed;
+                    RestoreResults["AsUType"] = RestoreResult.MergeFailed;
+                    Targets["AsUType"] = local;
+                    return;
+                }
             }
+            local.RestoreResult = RestoreResult.RestoreComplete;
+            RestoreResults["AsUType"] = RestoreResult.RestoreComplete;
+            Targets["AsUType"] = local;
         }
         private void RestoreNpp() {
             BackupTarget local = Targets["Notepad++"];
@@ -562,21 +567,32 @@ namespace UserDataBackup {
             if (!Directory.Exists(nppFile.Directory.FullName)) {
                 nppFile.Directory.Create();
             }
-            foreach (Process process in Process.GetProcessesByName("notpad++")) {
+            KillProcessTree("notepad++"); //FINISH TRYCATCH
+            try {
+                nppBackupFile.CopyTo(nppFile.FullName, true);
+                DirectoryInfo nppBackupFolder = new DirectoryInfo($@"{nppFile.Directory.FullName}\backup");
+                if (!nppBackupFolder.Exists)
+                    Directory.CreateDirectory(nppBackupFolder.FullName);
+                CopyDir($@"{nppBackupFile.DirectoryName}\files", nppBackupFolder.FullName, false);
+            } catch (IOException) {
+                KillProcessTree("notepad++");
                 try {
-                    if (!process.HasExited) {
-                        process.Kill();
-                        process.WaitForExit();
-                    } 
-                } catch { }
+                    nppBackupFile.CopyTo(nppFile.FullName, true);
+                    DirectoryInfo nppBackupFolder = new DirectoryInfo($@"{nppFile.Directory.FullName}\backup");
+                    if (!nppBackupFolder.Exists)
+                        Directory.CreateDirectory(nppBackupFolder.FullName);
+                    CopyDir($@"{nppBackupFile.DirectoryName}\files", nppBackupFolder.FullName, false);
+                } catch (IOException) {
+                    local.RestoreResult = RestoreResult.MergeFailed;
+                    RestoreResults["Notepad"] = RestoreResult.MergeFailed;
+                    Targets["Notepad"] = local;
+                    return;
+                }
             }
-            nppBackupFile.CopyTo(nppFile.FullName, true);
-            DirectoryInfo nppBackupFolder = new DirectoryInfo($@"{nppFile.Directory.FullName}\backup");
-            if (!nppBackupFolder.Exists)
-                Directory.CreateDirectory(nppBackupFolder.FullName);
-            CopyDir($@"{nppBackupFile.DirectoryName}\files", nppBackupFolder.FullName, false);
+
             local.RestoreResult = RestoreResult.RestoreComplete;
-            Targets["Notepad++"] = local;
+            RestoreResults["Notepad"] = RestoreResult.RestoreComplete;
+            Targets["Notepad"] = local;
         }
     }
 }

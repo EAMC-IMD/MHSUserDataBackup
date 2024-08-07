@@ -170,11 +170,6 @@ namespace UserDataBackup {
                     Directory.CreateDirectory($@"{BackupRoot}\StickyNotes");
                 CopyDir($@"{Properties.Resources.OldBackup}\Sticky Notes", $@"{BackupRoot}\StickyNotes", null, false);
             }
-            //if (Directory.Exists($@"{Properties.Resources.OldBackup}\Asutype")) {
-            //    if (!Directory.Exists($@"{BackupRoot}\AsUType"))
-            //        Directory.CreateDirectory($@"{BackupRoot}\AsUType");
-            //    CopyDir($@"{Properties.Resources.OldBackup}\Asutype", $@"{BackupRoot}\AsUType", null, false);
-            //}
             if (Directory.Exists($@"{Properties.Resources.OldBackup}\npp")) {
                 if (!Directory.Exists($@"{BackupRoot}\npp"))
                     Directory.CreateDirectory($@"{BackupRoot}\npp");

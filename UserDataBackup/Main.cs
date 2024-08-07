@@ -9,11 +9,12 @@ using OneDrive.OdSyncService;
 
 namespace UserDataBackup {
     public partial class Main : Form {
-        private ProfileData _data;
-        private OneDriveStatus _odStatus;
+        private ProfileData _data = new ProfileData(Program.OneDriveRoot, Program.BackupRoot);
+        private OneDriveStatus _odStatus = new OneDriveStatus();
         private StatusDetail _status;
-        private System.Timers.Timer _timer;
+        private System.Timers.Timer _timer = new System.Timers.Timer();
         public Main() {
+            _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
             InitializeComponent();
         }
         private void Main_Load(object sender, EventArgs e) {

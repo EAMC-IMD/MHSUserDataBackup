@@ -19,7 +19,7 @@ namespace UserDataBackup.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,6 +61,15 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Backup in progress..
+        /// </summary>
+        internal static string BackupInProgressStatus {
+            get {
+                return ResourceManager.GetString("BackupInProgressStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to true.
         /// </summary>
         internal static string DecentralizeAUT {
@@ -86,6 +95,51 @@ namespace UserDataBackup.Properties {
             get {
                 object obj = ResourceManager.GetObject("Newtonsoft_Json", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This program backs data up to OneDrive.  However, you do not currently have an active network connection. You can still run the backup, and it will be queued for update to OneDrive next time you connect. You should NOT treat this backup as complete until you are connected back to the MHS network, and your OneDrive icon shows &apos;Up to Date&apos;..
+        /// </summary>
+        internal static string NoNetworkMessage {
+            get {
+                return ResourceManager.GetString("NoNetworkMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No internet connection.
+        /// </summary>
+        internal static string NoNetworkStatus {
+            get {
+                return ResourceManager.GetString("NoNetworkStatus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore operations with a status of &apos;NoNewProfile&apos; cannot be competed until the program is launched for the first time..
+        /// </summary>
+        internal static string NoNewProfileMessage {
+            get {
+                return ResourceManager.GetString("NoNewProfileMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you need assistance setting up OneDrive, please contact GSC at 800-600-9332 or https://gsc.health.mil.
+        /// </summary>
+        internal static string NoOneDriveFolderMessage {
+            get {
+                return ResourceManager.GetString("NoOneDriveFolderMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This version of User Data Management is intended for OneDrive only..
+        /// </summary>
+        internal static string NoOneDriveFolderStatus {
+            get {
+                return ResourceManager.GetString("NoOneDriveFolderStatus", resourceCulture);
             }
         }
         
@@ -139,6 +193,33 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to C:\Program Files\Microsoft OneDrive\OneDrive.exe.
+        /// </summary>
+        internal static string OneDriveExecutablePath {
+            get {
+                return ResourceManager.GetString("OneDriveExecutablePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In order to complete the backup, Outlook, Sticky Notes, AsUType and all browsers must be closed. Please ensure you have no unsaved work before continuing.&quot;.
+        /// </summary>
+        internal static string ProcessCloseMessage {
+            get {
+                return ResourceManager.GetString("ProcessCloseMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore operations complete! Here are the results of each item:.
+        /// </summary>
+        internal static string RestoreResultMessage {
+            get {
+                return ResourceManager.GetString("RestoreResultMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] SapphTools_BookmarkManager_Chromium {
@@ -159,12 +240,39 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sync complete!.
+        /// </summary>
+        internal static string SyncCompleteMessage {
+            get {
+                return ResourceManager.GetString("SyncCompleteMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap SyncInPrgress {
             get {
                 object obj = ResourceManager.GetObject("SyncInPrgress", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your bookmarks, sticky notes, Outlook signatures, and AsUType shortcuts (if extant) have been backed up to the Backup folder in your OneDrive. However, it is critical you do not log out, remove your CAC, reboot, or interrupt your network connection until sync is complete..
+        /// </summary>
+        internal static string SyncInProgressMessage {
+            get {
+                return ResourceManager.GetString("SyncInProgressMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sync in progress..
+        /// </summary>
+        internal static string SyncInProgressStatus {
+            get {
+                return ResourceManager.GetString("SyncInProgressStatus", resourceCulture);
             }
         }
     }

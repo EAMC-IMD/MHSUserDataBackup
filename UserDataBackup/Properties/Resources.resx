@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BackupInProgressStatus" xml:space="preserve">
+    <value>Backup in progress.</value>
+  </data>
   <data name="DecentralizeAUT" xml:space="preserve">
     <value>true</value>
   </data>
@@ -126,6 +129,21 @@
   </data>
   <data name="Newtonsoft_Json" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Newtonsoft.Json.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="NoNetworkMessage" xml:space="preserve">
+    <value>This program backs data up to OneDrive.  However, you do not currently have an active network connection. You can still run the backup, and it will be queued for update to OneDrive next time you connect. You should NOT treat this backup as complete until you are connected back to the MHS network, and your OneDrive icon shows 'Up to Date'.</value>
+  </data>
+  <data name="NoNetworkStatus" xml:space="preserve">
+    <value>No internet connection</value>
+  </data>
+  <data name="NoNewProfileMessage" xml:space="preserve">
+    <value>Restore operations with a status of 'NoNewProfile' cannot be competed until the program is launched for the first time.</value>
+  </data>
+  <data name="NoOneDriveFolderMessage" xml:space="preserve">
+    <value>If you need assistance setting up OneDrive, please contact GSC at 800-600-9332 or https://gsc.health.mil</value>
+  </data>
+  <data name="NoOneDriveFolderStatus" xml:space="preserve">
+    <value>This version of User Data Management is intended for OneDrive only.</value>
   </data>
   <data name="offline_icon_19" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\offline-icon-19.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -139,8 +157,17 @@
   <data name="OneDriveError" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OneDriveError.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="OneDriveExecutablePath" xml:space="preserve">
+    <value>C:\Program Files\Microsoft OneDrive\OneDrive.exe</value>
+  </data>
   <data name="onedrive_base" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\onedrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ProcessCloseMessage" xml:space="preserve">
+    <value>In order to complete the backup, Outlook, Sticky Notes, AsUType and all browsers must be closed. Please ensure you have no unsaved work before continuing."</value>
+  </data>
+  <data name="RestoreResultMessage" xml:space="preserve">
+    <value>Restore operations complete! Here are the results of each item:</value>
   </data>
   <data name="SapphTools_BookmarkManager_Chromium" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\SapphTools.BookmarkManager.Chromium.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -148,7 +175,16 @@
   <data name="SyncComplete2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SyncComplete2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SyncCompleteMessage" xml:space="preserve">
+    <value>Sync complete!</value>
+  </data>
   <data name="SyncInPrgress" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SyncInPrgress.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SyncInProgressMessage" xml:space="preserve">
+    <value>Your bookmarks, sticky notes, Outlook signatures, and AsUType shortcuts (if extant) have been backed up to the Backup folder in your OneDrive. However, it is critical you do not log out, remove your CAC, reboot, or interrupt your network connection until sync is complete.</value>
+  </data>
+  <data name="SyncInProgressStatus" xml:space="preserve">
+    <value>Sync in progress.</value>
   </data>
 </root>

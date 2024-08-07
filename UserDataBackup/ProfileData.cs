@@ -561,7 +561,7 @@ namespace UserDataBackup {
             FileInfo nppBackupFile = new FileInfo($@"{BackupRoot}\npp\session.xml");
             if (!nppBackupFile.Exists) {
                 local.RestoreResult = RestoreResult.NoBackupExists;
-                Targets["Notepad ++"] = local;
+                Targets["Notepad++"] = local;
                 return;
             }
             if (!Directory.Exists(nppFile.Directory.FullName)) {
@@ -584,15 +584,15 @@ namespace UserDataBackup {
                     CopyDir($@"{nppBackupFile.DirectoryName}\files", nppBackupFolder.FullName, false);
                 } catch (IOException) {
                     local.RestoreResult = RestoreResult.MergeFailed;
-                    RestoreResults["Notepad"] = RestoreResult.MergeFailed;
-                    Targets["Notepad"] = local;
+                    RestoreResults["Notepad++"] = RestoreResult.MergeFailed;
+                    Targets["Notepad++"] = local;
                     return;
                 }
             }
 
             local.RestoreResult = RestoreResult.RestoreComplete;
-            RestoreResults["Notepad"] = RestoreResult.RestoreComplete;
-            Targets["Notepad"] = local;
+            RestoreResults["Notepad++"] = RestoreResult.RestoreComplete;
+            Targets["Notepad++"] = local;
         }
     }
 }

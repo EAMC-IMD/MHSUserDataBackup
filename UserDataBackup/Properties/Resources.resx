@@ -142,6 +142,9 @@
   <data name="NoOneDriveFolderMessage" xml:space="preserve">
     <value>If you need assistance setting up OneDrive, please contact GSC at 800-600-9332 or https://gsc.health.mil</value>
   </data>
+  <data name="NoOneDriveFolderMessageDISA" xml:space="preserve">
+    <value>If you need assistance setting up OneDrive, please contact the DISA Service Desk at 844-DISA-HLP or https://help.disa.mil/gsd</value>
+  </data>
   <data name="NoOneDriveFolderStatus" xml:space="preserve">
     <value>This version of User Data Management is intended for OneDrive only.</value>
   </data>

@@ -135,6 +135,15 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If you need assistance setting up OneDrive, please contact the DISA Service Desk at 844-DISA-HLP or https://help.disa.mil/gsd.
+        /// </summary>
+        internal static string NoOneDriveFolderMessageDISA {
+            get {
+                return ResourceManager.GetString("NoOneDriveFolderMessageDISA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This version of User Data Management is intended for OneDrive only..
         /// </summary>
         internal static string NoOneDriveFolderStatus {

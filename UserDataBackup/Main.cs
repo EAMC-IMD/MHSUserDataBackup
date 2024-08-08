@@ -24,7 +24,17 @@ namespace UserDataBackup {
                 statusLabel.Text = Properties.Resources.NoOneDriveFolderStatus;
                 statusImage.Image = Properties.Resources.OneDriveError;
                 statusImage.Refresh();
-                MessageBox.Show(Properties.Resources.NoOneDriveFolderMessage);
+                string suffix = System.Net.NetworkInformation.NetworkInterface
+                    .GetAllNetworkInterfaces()
+                    .ToList()
+                    .Where(i => i.GetIPProperties().DnsSuffix != "")
+                    .First()
+                    .GetIPProperties()
+                    .DnsSuffix;
+                if (suffix == "med.ds.osd.mil")
+                    MessageBox.Show(Properties.Resources.NoOneDriveFolderMessage);
+                else
+                    MessageBox.Show(Properties.Resources.NoOneDriveFolderMessageDISA);
                 if (Process.GetProcessesByName("OneDrive").Count() == 0)
                     Process.Start(Properties.Resources.OneDriveExecutablePath);
             } else {

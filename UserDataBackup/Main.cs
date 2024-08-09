@@ -13,6 +13,8 @@ namespace UserDataBackup {
         private OneDriveStatus _odStatus = new OneDriveStatus();
         private StatusDetail _status;
         private System.Timers.Timer _timer = new System.Timers.Timer();
+        private int _timerResetCount = 0;
+        private readonly int MAX_RESET_COUNT = 15;
         public Main() {
             _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
             InitializeComponent();
@@ -72,6 +74,7 @@ namespace UserDataBackup {
             statusImage.Image = Properties.Resources.SyncInPrgress;
             statusImage.Refresh();
             if (_status.StatusString != "Up to date") {
+                _timerResetCount = 0;
                 Cursor = Cursors.WaitCursor;
                 _timer = new System.Timers.Timer(1000);
                 _timer.Elapsed += CheckForSync;
@@ -98,6 +101,7 @@ namespace UserDataBackup {
                 MessageBox.Show(Properties.Resources.NoNewProfileMessage);
         }
         private void CheckForSync(object source, System.Timers.ElapsedEventArgs e) {
+            _timerResetCount++;
             _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
             foreach (StatusDetail s in _odStatus.GetStatus()) {
                 foreach (System.Reflection.PropertyInfo prop in s.GetType().GetProperties()) {
@@ -106,15 +110,22 @@ namespace UserDataBackup {
                         Debug.Print(prop.GetValue(s, null).ToString());
                 }
             }
-            if (_status.StatusString == "Up to date" || _status.StatusString == "Synced")
+            if (_status.StatusString == "Up to date" || _status.StatusString == "Synced" || _timerResetCount >= MAX_RESET_COUNT)
                 BackupComplete();
         }
-        private void BackupComplete() {
+        private void BackupComplete(bool TimedOut = false) {
             Cursor = Cursors.Default;
             _timer.Enabled = false;
             _timer.Stop();
             _timer.Dispose();
-            MessageBox.Show(Properties.Resources.SyncCompleteMessage, Properties.Resources.SyncCompleteMessage, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+            MessageBox.Show(
+                TimedOut ? Properties.Resources.SyncCompleteMessage : Properties.Resources.SyncTimedOutMessage, 
+                Properties.Resources.SyncCompleteMessage, 
+                MessageBoxButtons.OK, 
+                MessageBoxIcon.Information, 
+                MessageBoxDefaultButton.Button1, 
+                MessageBoxOptions.DefaultDesktopOnly
+            );
             statusLabel.Text = Properties.Resources.SyncCompleteMessage;
             statusImage.Image = Properties.Resources.SyncComplete2;
             statusImage.Refresh();

@@ -116,10 +116,13 @@ namespace UserDataBackup {
             RestoreResults = new Dictionary<string, RestoreResult>();
             CheckTargets();
         }
-        private static void CopyDir(string sourcePath, string targetPath, bool recursive) {
+        private static void CopyDir(string sourcePath, string targetPath, bool recursive)  {
             CopyDir(sourcePath, targetPath, null, recursive);
         }
         private static void CopyDir(string sourcePath, string targetPath, string? filter, bool recursive) {
+            CopyDir(sourcePath, targetPath, filter, null, recursive);
+        }
+        private static void CopyDir(string sourcePath, string targetPath, string? filter, string? exclusionFilter, bool recursive) {
             DirectoryInfo sourceInfo = new DirectoryInfo(sourcePath);
             if (Regex.IsMatch(sourceInfo.FullName, @"Firefox\\Profiles\\.*\\storage\\default"))
                 return;
@@ -128,7 +131,9 @@ namespace UserDataBackup {
             DirectoryInfo[] subSource = sourceInfo.GetDirectories();
             if (!Directory.Exists(targetPath))
                 Directory.CreateDirectory(targetPath);
-            foreach (FileInfo file in filter is null?sourceInfo.GetFiles():sourceInfo.GetFiles(filter)) {
+            foreach (FileInfo file in filter is null ? sourceInfo.GetFiles() : sourceInfo.GetFiles(filter)) {
+                if (exclusionFilter != null && Regex.IsMatch(file.Name, exclusionFilter))
+                    continue;
                 string filePath = Path.Combine(targetPath, file.Name);
                 file.CopyTo(filePath, true);
             }
@@ -240,7 +245,7 @@ namespace UserDataBackup {
             if (!Directory.Exists(firefox.Backup_Path))
                 Directory.CreateDirectory(firefox.Backup_Path);
             KillProcessTree(firefox.ProcessName);
-            CopyDir(firefox.Bookmark_Path, firefox.Backup_Path, true);
+            CopyDir(firefox.Bookmark_Path, firefox.Backup_Path, null, @"\.com$", true);
         }
         private void BackupStickyNotes() {
             BackupTarget thisTarget = Targets["StickyNotes"];

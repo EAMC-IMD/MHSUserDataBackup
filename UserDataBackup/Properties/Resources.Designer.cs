@@ -284,5 +284,14 @@ namespace UserDataBackup.Properties {
                 return ResourceManager.GetString("SyncInProgressStatus", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sync timed out.  This could be due to a slow connection, or due to one or more files blocking OneDrive from reporting a fully synced status.  Please check the status of OneDrive manually from the taskbar icon..
+        /// </summary>
+        internal static string SyncTimedOutMessage {
+            get {
+                return ResourceManager.GetString("SyncTimedOutMessage", resourceCulture);
+            }
+        }
     }
 }

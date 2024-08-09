@@ -197,7 +197,7 @@ PublishScripts/
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+#**/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
@@ -361,3 +361,34 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/packages/Costura.Fody.5.7.0
+/packages/EntityFramework.6.4.4
+/packages/Microsoft.NETCore.Platforms.1.1.0
+/packages/NETStandard.Library.1.6.1
+/packages/Newtonsoft.Json.13.0.3
+/packages/SQLite.3.13.0
+/packages/Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0
+/packages/System.Collections.4.3.0
+/packages/System.Collections.Concurrent.4.3.0
+/packages/System.Data.SQLite.1.0.118.0
+/packages/System.Data.SQLite.Core.1.0.118.0
+/packages/System.Data.SQLite.EF6.1.0.118.0
+/packages/System.Data.SQLite.Linq.1.0.118.0
+/packages/System.Diagnostics.Debug.4.3.0
+/packages/System.Diagnostics.DiagnosticSource.4.3.0
+/packages/System.Diagnostics.Tools.4.3.0
+/packages/System.Globalization.4.3.0
+/packages/System.Net.Http.4.3.0
+/packages/System.Net.Primitives.4.3.0
+/packages/System.ObjectModel.4.3.0
+/packages/System.Reflection.Extensions.4.3.0
+/packages/System.Reflection.Primitives.4.3.0
+/packages/System.Resources.ResourceManager.4.3.0
+/packages/System.Runtime.Handles.4.3.0
+/packages/System.Runtime.Numerics.4.3.0
+/packages/System.Text.Encoding.4.3.0
+/packages/System.Text.Encoding.Extensions.4.3.0
+/packages/System.Threading.4.3.0
+/packages/System.Threading.Tasks.4.3.0
+/packages/System.Threading.Timer.4.3.0
+/packages/System.Xml.XDocument.4.3.0

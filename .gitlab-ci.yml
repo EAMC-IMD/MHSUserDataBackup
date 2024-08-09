@@ -39,6 +39,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Compile complete."
     - echo "$CI_PROJECT_PATH"
     - echo "$env:EXE_RELEASE_FOLDER\UserDataManagement.exe"
+    - gci "$env:EXE_RELEASE_FOLDER"
   artifacts:
     #expire_in: 1 week  # save gitlab server space, we copy the files we need to deploy folder later on
     paths:

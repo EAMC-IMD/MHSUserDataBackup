@@ -190,4 +190,7 @@
   <data name="SyncInProgressStatus" xml:space="preserve">
     <value>Sync in progress.</value>
   </data>
+  <data name="SyncTimedOutMessage" xml:space="preserve">
+    <value>Sync timed out.  This could be due to a slow connection, or due to one or more files blocking OneDrive from reporting a fully synced status.  Please check the status of OneDrive manually from the taskbar icon.</value>
+  </data>
 </root>

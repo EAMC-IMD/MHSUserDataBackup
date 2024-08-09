@@ -1,0 +1,63 @@
+# This file is a template, and might need editing before it works on your project.
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+#
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+variables:
+  EXE_RELEASE_FOLDER: 'UserDataBackup\bin\Release'
+  #MSI_RELEASE_FOLDER: 'Setup\bin\Release'
+  #TEST_FOLDER: 'Tests\bin\Release'
+  DEPLOY_FOLDER: 'A:\Projects\UserDataManagement\Builds'
+  NUGET_PATH: 'C:\GitLab-Runner\nuget.exe'
+  MSBUILD_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\msbuild.exe'
+  #NUNIT_PATH: 'C:\Program Files (x86)\NUnit.org\nunit-console\nunit3-console.exe'
+
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - deploy
+
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - '& "$env:NUGET_PATH" restore'
+    - '& "$env:MSBUILD_PATH" /p:Configuration=Release'
+    - echo "Compile complete."
+  artifacts:
+    #expire_in: 1 week  # save gitlab server space, we copy the files we need to deploy folder later on
+    paths:
+      - '$env:EXE_RELEASE_FOLDER\UserDataManagement.exe'  # saving exe to copy to deploy folder
+
+deploy_job:
+  stage: deploy
+  script:
+    # Compose a folder for each release based on commit tag.
+    # Assuming your tag is Rev1.0.0.1, and your last commit message is 'First commit'
+    # the artifact files will be copied to:
+    # P:\Projects\YourApp\Builds\Rev1.0.0.1 - First commit\
+    - echo "Deploying application..."    
+    - '$commitSubject = git log -1 --pretty=%s'
+    - '$deployFolder = $($env:DEPLOY_FOLDER) + "\" + $($env:CI_COMMIT_TAG) + " - " + $commitSubject + "\"'
+
+    # xcopy takes care of recursively creating required folders
+    - 'xcopy /y ".\$env:EXE_RELEASE_FOLDER\UserDataManagement.exe" "$deployFolder"'
+    #- 'xcopy /y ".\$env:MSI_RELEASE_FOLDER\YourApp Setup.msi" "$deployFolder"'
+    #- 'xcopy /y ".\TestResult.xml" "$deployFolder"'
+    - echo "Application successfully deployed."    
+  dependencies:
+    - build-job
+  environment: production

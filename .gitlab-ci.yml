@@ -58,5 +58,5 @@ deploy_job:
     #- 'xcopy /y ".\TestResult.xml" "$deployFolder"'
     - echo "Application successfully deployed."    
   dependencies:
-    - build_job
+    - build-job
   environment: production

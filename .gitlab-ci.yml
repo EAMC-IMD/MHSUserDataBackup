@@ -16,7 +16,7 @@
 # This specific template is located at:
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 variables:
-  EXE_RELEASE_FOLDER: '.\UserDataBackup\bin\Release'
+  EXE_RELEASE_FOLDER: 'UserDataBackup\bin\Release'
   #MSI_RELEASE_FOLDER: 'Setup\bin\Release'
   #TEST_FOLDER: 'Tests\bin\Release'
   DEPLOY_FOLDER: 'A:\Projects\UserDataManagement\Builds'
@@ -37,6 +37,8 @@ build-job:       # This job runs in the build stage, which runs first.
     - '& "$env:NUGET_PATH" restore'
     - '& "$env:MSBUILD_PATH" /p:Configuration=Release'
     - echo "Compile complete."
+    - echo "$CI_PROJECT_PATH"
+    - echo "$env:EXE_RELEASE_FOLDER\UserDataManagement.exe"
   artifacts:
     #expire_in: 1 week  # save gitlab server space, we copy the files we need to deploy folder later on
     paths:

@@ -15,6 +15,15 @@
 # https://docs.gitlab.com/ee/development/cicd/templates.html
 # This specific template is located at:
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+variables:
+  EXE_RELEASE_FOLDER: 'UserDataBackup\bin\Release'
+  #MSI_RELEASE_FOLDER: 'Setup\bin\Release'
+  #TEST_FOLDER: 'Tests\bin\Release'
+  DEPLOY_FOLDER: 'A:\Projects\UserDataManagement\Builds'
+  NUGET_PATH: 'C:\NuGet\nuget.exe'
+  MSBUILD_PATH: 'C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\msbuild.exe'
+  #NUNIT_PATH: 'C:\Program Files (x86)\NUnit.org\nunit-console\nunit3-console.exe'
+
 
 stages:          # List of stages for jobs, and their order of execution
   - build
@@ -25,25 +34,29 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - echo "Compiling the code..."
+    - '& "$env:MSBUILD_PATH" /p:Configuration=Release'
     - echo "Compile complete."
+  artifacts:
+    #expire_in: 1 week  # save gitlab server space, we copy the files we need to deploy folder later on
+    paths:
+      - '$env:EXE_RELEASE_FOLDER\UserDataManagement.exe'  # saving exe to copy to deploy folder
 
-unit-test-job:   # This job runs in the test stage.
-  stage: test    # It only starts when the job in the build stage completes successfully.
+deploy_job:
+  stage: deploy
   script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - sleep 60
-    - echo "Code coverage is 90%"
+    # Compose a folder for each release based on commit tag.
+    # Assuming your tag is Rev1.0.0.1, and your last commit message is 'First commit'
+    # the artifact files will be copied to:
+    # P:\Projects\YourApp\Builds\Rev1.0.0.1 - First commit\
+    - echo "Deploying application..."    
+    - '$commitSubject = git log -1 --pretty=%s'
+    - '$deployFolder = $($env:DEPLOY_FOLDER) + "\" + $($env:CI_COMMIT_TAG) + " - " + $commitSubject + "\"'
 
-lint-test-job:   # This job also runs in the test stage.
-  stage: test    # It can run at the same time as unit-test-job (in parallel).
-  script:
-    - echo "Linting code... This will take about 10 seconds."
-    - sleep 10
-    - echo "No lint issues found."
-
-deploy-job:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+    # xcopy takes care of recursively creating required folders
+    - 'xcopy /y ".\$env:EXE_RELEASE_FOLDER\UserDataManagement.exe" "$deployFolder"'
+    #- 'xcopy /y ".\$env:MSI_RELEASE_FOLDER\YourApp Setup.msi" "$deployFolder"'
+    #- 'xcopy /y ".\TestResult.xml" "$deployFolder"'
+    - echo "Application successfully deployed."    
+  dependencies:
+    - build_job
   environment: production
-  script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."

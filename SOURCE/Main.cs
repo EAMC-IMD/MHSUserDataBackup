@@ -102,6 +102,7 @@ namespace UserDataBackup {
         }
         private void CheckForSync(object source, System.Timers.ElapsedEventArgs e) {
             _timerResetCount++;
+            Debug.WriteLine($"Loop {_timerResetCount} :: {DateTime.Now}");
             _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
             foreach (StatusDetail s in _odStatus.GetStatus()) {
                 foreach (System.Reflection.PropertyInfo prop in s.GetType().GetProperties()) {
@@ -111,7 +112,7 @@ namespace UserDataBackup {
                 }
             }
             if (_status.StatusString == "Up to date" || _status.StatusString == "Synced" || _timerResetCount >= MAX_RESET_COUNT)
-                BackupComplete();
+                BackupComplete(_timerResetCount >= MAX_RESET_COUNT);
         }
         private void BackupComplete(bool TimedOut = false) {
             Cursor = Cursors.Default;
@@ -119,7 +120,7 @@ namespace UserDataBackup {
             _timer.Stop();
             _timer.Dispose();
             MessageBox.Show(
-                TimedOut ? Properties.Resources.SyncCompleteMessage : Properties.Resources.SyncTimedOutMessage, 
+                TimedOut ? Properties.Resources.SyncTimedOutMessage : Properties.Resources.SyncCompleteMessage, 
                 Properties.Resources.SyncCompleteMessage, 
                 MessageBoxButtons.OK, 
                 MessageBoxIcon.Information, 

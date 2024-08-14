@@ -49,21 +49,43 @@ namespace UserDataBackup {
             ProfileRoot = profileRoot;
             BackupRoot = backupRoot;
 
+            DirectoryInfo chromeProfile = new DirectoryInfo($@"{localappdata}\Google\Chrome\User Data\Default\");
+            if (!chromeProfile.Exists) {
+                var profileList = chromeProfile.EnumerateDirectories();
+                foreach (var dir in profileList) {
+                    if (!chromeProfile.Exists)
+                        chromeProfile = dir;
+                    else if (dir.LastWriteTime > chromeProfile.LastWriteTime)
+                        chromeProfile = dir;
+                }
+            }
+
+            DirectoryInfo edgeProfile = new DirectoryInfo($@"{localappdata}\Microsoft\Edge\User Data\Default\");
+            if (!edgeProfile.Exists) {
+                var profileList = edgeProfile.EnumerateDirectories();
+                foreach (var dir in profileList) {
+                    if (!edgeProfile.Exists)
+                        edgeProfile = dir;
+                    else if (dir.LastWriteTime > edgeProfile.LastWriteTime)
+                        edgeProfile = dir;
+                }
+            }
+
             chrome = new Browser {
                 IndexName = "Chrome",
-                Bookmark_Path = $@"{localappdata}\Google\Chrome\User Data\Default\Bookmarks",
+                Bookmark_Path = $@"{chromeProfile.FullName}\Bookmarks",
                 Backup_Path = $@"{BackupRoot}\Chrome\Bookmarks",
-                LiveBackup_Path = $@"{localappdata}\Google\Chrome\User Data\Default\Bookmarks.bak",
-                Live_Bookmark_File = new FileInfo($@"{localappdata}\Google\Chrome\User Data\Default\Bookmarks"),
+                LiveBackup_Path = $@"{chromeProfile.FullName}\Bookmarks.bak",
+                Live_Bookmark_File = new FileInfo($@"{chromeProfile.FullName}\Bookmarks"),
                 Backup_Bookmark_File = new FileInfo($@"{BackupRoot}\Chrome\Bookmarks"),
                 ProcessName = "chrome"
             };
             edge = new Browser {
                 IndexName = "Edge",
-                Bookmark_Path = $@"{localappdata}\Microsoft\Edge\User Data\Default\Bookmarks",
+                Bookmark_Path = $@"{edgeProfile.FullName}\Bookmarks",
                 Backup_Path = $@"{BackupRoot}\Edge\Bookmarks",
-                LiveBackup_Path = $@"{localappdata}\Microsoft\Edge\User Data\Default\Bookmarks.bak",
-                Live_Bookmark_File = new FileInfo($@"{localappdata}\Microsoft\Edge\User Data\Default\Bookmarks"),
+                LiveBackup_Path = $@"{edgeProfile.FullName}\Bookmarks.bak",
+                Live_Bookmark_File = new FileInfo($@"{edgeProfile.FullName}\Bookmarks"),
                 Backup_Bookmark_File = new FileInfo($@"{BackupRoot}\Edge\Bookmarks"),
                 ProcessName = "msedge"
             };

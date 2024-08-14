@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using OneDrive;
 using OneDrive.OdSyncService;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace UserDataBackup {
     public partial class Main : Form {
@@ -15,12 +17,25 @@ namespace UserDataBackup {
         private System.Timers.Timer _timer = new System.Timers.Timer();
         private int _timerResetCount = 0;
         private readonly int MAX_RESET_COUNT = 15;
+        private readonly bool UNATTENDED_BACKUP = Environment.GetCommandLineArgs().Contains("silentback");
+        private readonly bool UNATTENDED_RESTORE = Environment.GetCommandLineArgs().Contains("silentrest");
+        private readonly bool UNATTENDED = Environment.GetCommandLineArgs().Contains("silentback") || Environment.GetCommandLineArgs().Contains("silentrest");
         public Main() {
             _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
             InitializeComponent();
         }
+        protected override void SetVisibleCore(bool value) {
+            base.SetVisibleCore(UNATTENDED ? value : UNATTENDED);
+        }
+        private DialogResult AttendedMessageBox(string text, string caption = "", MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None, MessageBoxDefaultButton defaultButton = MessageBoxDefaultButton.Button1, MessageBoxOptions options = 0) {
+            if (!UNATTENDED)
+                return MessageBox.Show(text, caption, buttons, icon, defaultButton, options);
+            return DialogResult.None;
+        }
         private void Main_Load(object sender, EventArgs e) {
             if (!Directory.Exists(Program.OneDriveRoot)) {
+                if (UNATTENDED)
+                    Application.Exit();
                 backup.Enabled = false;
                 restore.Enabled = false;
                 statusLabel.Text = Properties.Resources.NoOneDriveFolderStatus;
@@ -34,9 +49,9 @@ namespace UserDataBackup {
                     .GetIPProperties()
                     .DnsSuffix;
                 if (suffix == "med.ds.osd.mil")
-                    MessageBox.Show(Properties.Resources.NoOneDriveFolderMessage);
+                    AttendedMessageBox(Properties.Resources.NoOneDriveFolderMessage);
                 else
-                    MessageBox.Show(Properties.Resources.NoOneDriveFolderMessageDISA);
+                    AttendedMessageBox(Properties.Resources.NoOneDriveFolderMessageDISA);
                 if (Process.GetProcessesByName("OneDrive").Count() == 0)
                     Process.Start(Properties.Resources.OneDriveExecutablePath);
             } else {
@@ -51,6 +66,12 @@ namespace UserDataBackup {
                 }
                 statusImage.Refresh();
             }
+            if (UNATTENDED_BACKUP)
+                RunBackup();
+            else if (UNATTENDED_RESTORE)
+                RunRestore();
+            if (UNATTENDED)
+                Application.Exit();
         }
         private void RunBackup() {
             if (Process.GetProcessesByName("OneDrive").Count() == 0)
@@ -59,21 +80,21 @@ namespace UserDataBackup {
                 IncludeLog = true
             };
             _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
-            if (_status.StatusString == Properties.Resources.NoNetworkStatus) {
-                MessageBox.Show(Properties.Resources.NoNetworkMessage, "Offline Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (_status.StatusString == Properties.Resources.NoNetworkStatus && !UNATTENDED) {
+                AttendedMessageBox(Properties.Resources.NoNetworkMessage, "Offline Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-            if (MessageBox.Show(Properties.Resources.ProcessCloseMessage, "Process Exit Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
+            if (AttendedMessageBox(Properties.Resources.ProcessCloseMessage, "Process Exit Warning", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
                 return;
             statusLabel.Text = Properties.Resources.BackupInProgressStatus;
             _data.Backup();
             if (_odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot).StatusString == "No internet connection")
                 return;
             statusLabel.Text = Properties.Resources.SyncInProgressStatus;
-            MessageBox.Show(Properties.Resources.SyncInProgressMessage, "Sync In Progress", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AttendedMessageBox(Properties.Resources.SyncInProgressMessage, "Sync In Progress", MessageBoxButtons.OK, MessageBoxIcon.Information);
             _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
             statusImage.Image = Properties.Resources.SyncInPrgress;
             statusImage.Refresh();
-            if (_status.StatusString != "Up to date") {
+            if (_status.StatusString != "Up to date" && !UNATTENDED) {
                 _timerResetCount = 0;
                 Cursor = Cursors.WaitCursor;
                 _timer = new System.Timers.Timer(1000);
@@ -96,9 +117,9 @@ namespace UserDataBackup {
                 message.AppendLine($"\t{result.Key} : {result.Value.RestoreResult}");
                 nonewprofile ^= result.Value.RestoreResult == ProfileData.RestoreResult.NoNewProfile;
             }
-            MessageBox.Show(message.ToString(), "User Data Restore Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AttendedMessageBox(message.ToString(), "User Data Restore Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
             if (nonewprofile)
-                MessageBox.Show(Properties.Resources.NoNewProfileMessage);
+                AttendedMessageBox(Properties.Resources.NoNewProfileMessage);
         }
         private void CheckForSync(object source, System.Timers.ElapsedEventArgs e) {
             _timerResetCount++;
@@ -119,7 +140,7 @@ namespace UserDataBackup {
             _timer.Enabled = false;
             _timer.Stop();
             _timer.Dispose();
-            MessageBox.Show(
+            AttendedMessageBox(
                 TimedOut ? Properties.Resources.SyncTimedOutMessage : Properties.Resources.SyncCompleteMessage, 
                 Properties.Resources.SyncCompleteMessage, 
                 MessageBoxButtons.OK, 

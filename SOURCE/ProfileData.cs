@@ -5,6 +5,7 @@ using System.Linq;
 using System.Diagnostics;
 using SapphTools.BookmarkManager.Chromium;
 using System.Text.RegularExpressions;
+using System.Linq.Expressions;
 
 
 #nullable enable
@@ -51,24 +52,30 @@ namespace UserDataBackup {
 
             DirectoryInfo chromeProfile = new DirectoryInfo($@"{localappdata}\Google\Chrome\User Data\Default\");
             if (!chromeProfile.Exists) {
-                var profileList = chromeProfile.EnumerateDirectories();
-                foreach (var dir in profileList) {
-                    if (!chromeProfile.Exists)
-                        chromeProfile = dir;
-                    else if (dir.LastWriteTime > chromeProfile.LastWriteTime)
-                        chromeProfile = dir;
+                try {
+                    var profileList = chromeProfile.EnumerateDirectories();
+                    foreach (var dir in profileList) {
+                        if (!chromeProfile.Exists)
+                            chromeProfile = dir;
+                        else if (dir.LastWriteTime > chromeProfile.LastWriteTime)
+                            chromeProfile = dir;
+                    }
+                } catch {
+
                 }
             }
 
             DirectoryInfo edgeProfile = new DirectoryInfo($@"{localappdata}\Microsoft\Edge\User Data\Default\");
             if (!edgeProfile.Exists) {
-                var profileList = edgeProfile.EnumerateDirectories();
-                foreach (var dir in profileList) {
-                    if (!edgeProfile.Exists)
-                        edgeProfile = dir;
-                    else if (dir.LastWriteTime > edgeProfile.LastWriteTime)
-                        edgeProfile = dir;
-                }
+                try {
+                    var profileList = edgeProfile.EnumerateDirectories();
+                    foreach (var dir in profileList) {
+                        if (!edgeProfile.Exists)
+                            edgeProfile = dir;
+                        else if (dir.LastWriteTime > edgeProfile.LastWriteTime)
+                            edgeProfile = dir;
+                    }
+                } catch { }
             }
 
             chrome = new Browser {

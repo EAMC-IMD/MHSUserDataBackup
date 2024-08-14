@@ -25,7 +25,7 @@ namespace UserDataBackup {
             InitializeComponent();
         }
         protected override void SetVisibleCore(bool value) {
-            base.SetVisibleCore(UNATTENDED ? value : UNATTENDED);
+            base.SetVisibleCore(!UNATTENDED);
         }
         private DialogResult AttendedMessageBox(string text, string caption = "", MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None, MessageBoxDefaultButton defaultButton = MessageBoxDefaultButton.Button1, MessageBoxOptions options = 0) {
             if (!UNATTENDED)

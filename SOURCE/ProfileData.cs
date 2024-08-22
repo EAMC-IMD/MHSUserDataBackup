@@ -381,6 +381,8 @@ namespace UserDataBackup {
             BackupTarget thisTarget = Targets["Notepad++"];
             if (!thisTarget.TargetExists)
                 return;
+            if (!Directory.Exists($@"{appdata}\Notepad++\backup"))
+                return;
             FileInfo nppBackup = new FileInfo($@"{BackupRoot}\npp\session.xml");
             string fileTarget = $@"{nppBackup.Directory.FullName}\files";
             if (!nppBackup.Directory.Exists) {

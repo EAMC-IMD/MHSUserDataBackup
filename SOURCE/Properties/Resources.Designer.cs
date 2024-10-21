@@ -81,9 +81,9 @@ namespace UserDataBackup.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon EAMC_Backup_Utility {
+        internal static System.Drawing.Icon DHA_Backup_Utility {
             get {
-                object obj = ResourceManager.GetObject("EAMC_Backup_Utility", resourceCulture);
+                object obj = ResourceManager.GetObject("DHA_Backup_Utility", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }
@@ -159,15 +159,6 @@ namespace UserDataBackup.Properties {
             get {
                 object obj = ResourceManager.GetObject("offline_icon_19", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to H:\BACKUP.
-        /// </summary>
-        internal static string OldBackup {
-            get {
-                return ResourceManager.GetString("OldBackup", resourceCulture);
             }
         }
         

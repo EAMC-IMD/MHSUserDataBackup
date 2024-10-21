@@ -183,33 +183,6 @@ namespace UserDataBackup {
                 };
             }
         }
-        public void TryMigrate() {
-            if (Directory.Exists($@"{Properties.Resources.OldBackup}\Chrome")) {
-                if (!Directory.Exists($@"{BackupRoot}\Chrome"))
-                    Directory.CreateDirectory($@"{BackupRoot}\Chrome");
-                File.Copy(chrome.Live_Bookmark_File.FullName, chrome.Backup_Path, true);
-            }
-            if (Directory.Exists($@"{Properties.Resources.OldBackup}\Edge")) {
-                if (!Directory.Exists($@"{BackupRoot}\Edge"))
-                    Directory.CreateDirectory($@"{BackupRoot}\Edge");
-                File.Copy(edge.Live_Bookmark_File.FullName, edge.Backup_Path, true);
-            }
-            if (Directory.Exists($@"{Properties.Resources.OldBackup}\Firefox")) {
-                if (!Directory.Exists($@"{BackupRoot}\Firefox"))
-                    Directory.CreateDirectory($@"{BackupRoot}\Firefox");
-                CopyDir($@"{Properties.Resources.OldBackup}\Firefox", $@"{BackupRoot}\Firefox", null, false);
-            }
-            if (Directory.Exists($@"{Properties.Resources.OldBackup}\Sticky Notes")) {
-                if (!Directory.Exists($@"{BackupRoot}\StickyNotes"))
-                    Directory.CreateDirectory($@"{BackupRoot}\StickyNotes");
-                CopyDir($@"{Properties.Resources.OldBackup}\Sticky Notes", $@"{BackupRoot}\StickyNotes", null, false);
-            }
-            if (Directory.Exists($@"{Properties.Resources.OldBackup}\npp")) {
-                if (!Directory.Exists($@"{BackupRoot}\npp"))
-                    Directory.CreateDirectory($@"{BackupRoot}\npp");
-                CopyDir($@"{Properties.Resources.OldBackup}\npp", $@"{BackupRoot}\npp", null, false);
-            }
-        }
         private void KillProcessTree(string ProcessName) {
             if (ProcessName == null)
                 return;
@@ -237,10 +210,8 @@ namespace UserDataBackup {
             BackupNpp();
         }
         public bool Restore() {
-            if (!Directory.Exists(BackupRoot) && !Directory.Exists(Properties.Resources.OldBackup))
+            if (!Directory.Exists(BackupRoot))
                 return false;
-            if (!Directory.Exists(BackupRoot) && Directory.Exists(Properties.Resources.OldBackup))
-                TryMigrate();
             RestoreChrome();
             RestoreFirefox();
             RestoreEdge();

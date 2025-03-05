@@ -7,9 +7,10 @@ using System.Text;
 using System.Windows.Forms;
 using OneDrive;
 using OneDrive.OdSyncService;
+using UserDataBackup.Classes;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
-namespace UserDataBackup {
+namespace UserDataBackup.Forms {
     public partial class Main : Form {
         private ProfileData _data = new ProfileData(Program.OneDriveRoot, Program.BackupRoot);
         private OneDriveStatus _odStatus = new OneDriveStatus();
@@ -115,7 +116,7 @@ namespace UserDataBackup {
             bool nonewprofile = false;
             foreach (var result in _data.Targets) {
                 message.AppendLine($"\t{result.Key} : {result.Value.RestoreResult}");
-                nonewprofile ^= result.Value.RestoreResult == ProfileData.RestoreResult.NoNewProfile;
+                nonewprofile ^= result.Value.RestoreResult == RestoreResult.NoNewProfile;
             }
             AttendedMessageBox(message.ToString(), "User Data Restore Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
             if (nonewprofile)

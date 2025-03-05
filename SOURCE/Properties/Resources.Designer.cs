@@ -70,6 +70,16 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] BackupTargets {
+            get {
+                object obj = ResourceManager.GetObject("BackupTargets", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to true.
         /// </summary>
         internal static string DecentralizeAUT {

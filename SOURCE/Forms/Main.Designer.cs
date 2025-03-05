@@ -1,5 +1,5 @@
 ﻿
-namespace UserDataBackup {
+namespace UserDataBackup.Forms {
     partial class Main {
         /// <summary>
         /// Required designer variable.

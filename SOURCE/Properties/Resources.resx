@@ -120,10 +120,13 @@
   <data name="BackupInProgressStatus" xml:space="preserve">
     <value>Backup in progress.</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="BackupTargets" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\BackupTargets.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="DecentralizeAUT" xml:space="preserve">
     <value>true</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="DHA_Backup_Utility" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\EAMC Backup Utility.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

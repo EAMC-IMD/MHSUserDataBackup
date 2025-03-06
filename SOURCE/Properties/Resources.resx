@@ -167,7 +167,7 @@
     <value>..\Resources\onedrive.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ProcessCloseMessage" xml:space="preserve">
-    <value>In order to complete the backup, Outlook, Sticky Notes, AsUType and all browsers must be closed. Please ensure you have no unsaved work before continuing."</value>
+    <value>In order to complete the backup, Outlook, Sticky Notes, AsUType and all browsers must be closed. Please ensure you have no unsaved work before continuing.</value>
   </data>
   <data name="RestoreResultMessage" xml:space="preserve">
     <value>Restore operations complete! Here are the results of each item:</value>

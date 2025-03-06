@@ -212,7 +212,7 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to In order to complete the backup, Outlook, Sticky Notes, AsUType and all browsers must be closed. Please ensure you have no unsaved work before continuing.&quot;.
+        ///   Looks up a localized string similar to In order to complete the backup, Outlook, Sticky Notes, AsUType and all browsers must be closed. Please ensure you have no unsaved work before continuing..
         /// </summary>
         internal static string ProcessCloseMessage {
             get {

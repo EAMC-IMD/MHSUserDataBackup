@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using UserDataBackup.Enums;
@@ -7,7 +8,6 @@ using UserDataBackup.Enums;
 namespace UserDataBackup.Classes {
     public class BackupTarget : IEquatable<BackupTarget> {
         #region Fields
-        protected string _appPath = "";
         protected string _unformattedAppPath = "";
         #endregion
         #region Const and Readonly
@@ -15,6 +15,7 @@ namespace UserDataBackup.Classes {
         protected static readonly string _appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         #endregion
         #region Properties
+        [JsonInclude] public TargetApp App { get; set; }
 
         [JsonInclude]
         public string? AppFile { get; set; }
@@ -24,23 +25,23 @@ namespace UserDataBackup.Classes {
             get => _unformattedAppPath;
             set {
                 _unformattedAppPath = value;
-                _appPath = string.Format(value, Roaming ? _appdata : _localappdata);
-                TargetType = FileSystemHelper.GetFSIType(_appPath);
+                TargetType = FileSystemHelper.GetFSIType(AppPath);
             }
         }
         [JsonInclude] public string BackupFolder { get; set; } = "";
         [JsonInclude] public string FriendlyName { get; set; } = "";
         [JsonInclude] public List<string> ProcessName { get; set; } = new List<string>();
+        [JsonInclude] public bool RequireExisting { get; set; } = true;
         [JsonInclude] public bool Roaming { get; set; }
         [JsonInclude] public FileSystemType TargetType { get; set; }
-        [JsonInclude] public TargetApp App { get; set; }
         [JsonIgnore]  public RestoreResult Result { get; internal set; } = RestoreResult.NotAttempted;
 
         [JsonIgnore]
         public string AppPath {
-            get => _appPath;
+            get {
+                return string.Format(_unformattedAppPath, Roaming ? _appdata : _localappdata);
+            }
             set {
-                _appPath = value;
                 if (value.Contains(_localappdata)) {
                     Roaming = false;
                     _unformattedAppPath = value.Replace(_localappdata, @"{0}");
@@ -48,7 +49,7 @@ namespace UserDataBackup.Classes {
                     Roaming = true;
                     _unformattedAppPath = value.Replace(_appdata, @"{0}");
                 }
-                TargetType = FileSystemHelper.GetFSIType(_appPath);
+                TargetType = FileSystemHelper.GetFSIType(value);
             }
         }
 

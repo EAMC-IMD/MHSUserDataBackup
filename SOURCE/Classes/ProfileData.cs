@@ -7,7 +7,6 @@ using SapphTools.BookmarkManager.Chromium;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Text.Json;
-using System.Reflection;
 using System.Text;
 using System.Security;
 using UserDataBackup.Enums;
@@ -28,10 +27,7 @@ namespace UserDataBackup.Classes {
             BackupRoot = backupRoot;
             string jsonPath = $@"{Path.GetDirectoryName(Application.ExecutablePath)}\BackupTargets.json";
             string jsonText = File.ReadAllText(jsonPath);
-            if (jsonText is null) {
-                var assembly = Assembly.GetExecutingAssembly();
-                jsonText = Encoding.UTF8.GetString(Properties.Resources.BackupTargets);
-            }
+            jsonText ??= Encoding.UTF8.GetString(Properties.Resources.BackupTargets);
             BackupTargets = JsonSerializer.Deserialize<TargetCollection>(jsonText)!;
         }
         private static void CopyData(string sourcePath, string destinationFolder, FileSystemType type) {
@@ -50,10 +46,13 @@ namespace UserDataBackup.Classes {
                 FileInfo source = new FileInfo(sourcePath);
                 if (!source.Exists)
                     return;
+                if (File.Exists(destinationFolder))
+                    destinationFolder = (new FileInfo(destinationFolder)).DirectoryName;
                 if (!Directory.Exists(destinationFolder))
                     Directory.CreateDirectory(destinationFolder);
                 string sourceFileName = source.Name;
-                source.CopyTo($"{destinationFolder}{Path.DirectorySeparatorChar}{sourceFileName}", true);
+                string destinationFile = Path.Combine(destinationFolder, sourceFileName);
+                source.CopyTo(destinationFile, true);
                 return;
             }
             if (type == FileSystemType.Directory) {
@@ -122,6 +121,8 @@ namespace UserDataBackup.Classes {
                 if (!target.Valid)
                     continue;
                 switch (target.App) {
+                    case TargetApp.Comment:
+                        continue;
                     case TargetApp.Chrome:
                     case TargetApp.Edge:
                     case TargetApp.StickyNotes:
@@ -150,6 +151,8 @@ namespace UserDataBackup.Classes {
                 if (!target.Valid)
                     continue;
                 switch (target.App) {
+                    case TargetApp.Comment:
+                        continue;
                     case TargetApp.Chrome:
                     case TargetApp.Edge:
                         ChromiumRestore(target);
@@ -172,27 +175,28 @@ namespace UserDataBackup.Classes {
                         break;
                 }
             }
-            int failCount = BackupTargets.RestoreResults.Count(kv => kv.Value.Equals(RestoreResult.NoNewProfile));
-            failCount += BackupTargets.RestoreResults.Count(kv => kv.Value.Equals(RestoreResult.MergeFailed));
+            int failCount = BackupTargets.Where(bt => bt.App != TargetApp.Comment).Where(bt => bt.Result == RestoreResult.NoNewProfile).Count();
+            failCount += BackupTargets.Where(bt => bt.App != TargetApp.Comment).Where(bt => bt.Result == RestoreResult.MergeFailed).Count();
             if (failCount > 0)
                 return false;
             return true;
         }
         private void GenericBackup(BackupTarget target) {
-            if (!TargetExists(target.AppPath, target.TargetType))
+            string appFullPath = target.AppFile is null ? target.AppPath : Path.Combine(target.AppPath, target.AppFile);
+            if (!TargetExists(appFullPath, target.TargetType))
                 return;
             string backupFolder = GetFullBackupPath(target.BackupFolder);
             if (!Directory.Exists(backupFolder))
                 Directory.CreateDirectory(backupFolder);
             KillProcessTree(target.ProcessName);
             try {
-                CopyData(target.AppPath, backupFolder, FileSystemType.File);
+                CopyData(appFullPath, backupFolder, FileSystemType.File);
             } catch (ArgumentNullException) {
                 Debug.WriteLine("Unreachable.");
             } catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException) {
-                Debug.WriteLine($"Access denied to {target.AppPath} or {backupFolder}");
+                Debug.WriteLine($"Access denied to {appFullPath} or {backupFolder}");
             } catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is NotSupportedException) {
-                Debug.WriteLine($"Path contained invalid data : {target.AppPath} : {backupFolder}");
+                Debug.WriteLine($"Path contained invalid data : {appFullPath} : {backupFolder}");
             }
         }
         private void BackupFirefox(BackupTarget target) {
@@ -203,7 +207,7 @@ namespace UserDataBackup.Classes {
                 Directory.CreateDirectory(target.BackupFolder);
             KillProcessTree(target.ProcessName);
             try {
-                CopyData(target.AppPath, backupFolder, FileSystemType.File, null, @"\.com$", true);
+                CopyData(target.AppPath, backupFolder, FileSystemType.Directory, null, @"\.com$", true);
             } catch (ArgumentNullException) {
                 Debug.WriteLine("Unreachable.");
             } catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException) {
@@ -294,11 +298,12 @@ namespace UserDataBackup.Classes {
         }
         private void BackupNpp(BackupTarget target) {
             GenericBackup(target);
-            CopyDir($@"{_appdata}\Notepad++\backup", GetFullBackupPath(target.BackupFolder), false);
+            string extraFolder = Path.Combine(GetFullBackupPath(target.BackupFolder), "backup");
+            CopyDir($@"{_appdata}\Notepad++\backup", extraFolder, false);
         }
         private void ChromiumRestore(BackupTarget target) {
-            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
-            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            string backupFullPath = target.AppFile is null ? GetFullBackupPath(target.BackupFolder) : Path.Combine(GetFullBackupPath(target.BackupFolder), target.AppFile);
+            string appFullPath = target.AppFile is null ? target.AppPath : Path.Combine(target.AppPath, target.AppFile);
             if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
@@ -324,8 +329,8 @@ namespace UserDataBackup.Classes {
                 return;
             }
 
-            BookmarkFile live = new BookmarkFile(target.AppPath);
-            BookmarkFile backup = new BookmarkFile(target.BackupFolder);
+            BookmarkFile live = new BookmarkFile(appFullPath);
+            BookmarkFile backup = new BookmarkFile(backupFullPath);
             KillProcessTree(target.ProcessName);
             try {
                 if (!live.Merge(backup, out BookmarkFile merge)) {
@@ -351,8 +356,7 @@ namespace UserDataBackup.Classes {
             return;
         }
         private void RestoreFirefox(BackupTarget target) {
-            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
-            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            string backupFullPath = target.AppFile is null ? GetFullBackupPath(target.BackupFolder) : Path.Combine(GetFullBackupPath(target.BackupFolder), target.AppFile);
             if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
@@ -375,32 +379,33 @@ namespace UserDataBackup.Classes {
 
         }
         private void GenericRestore(BackupTarget target) {
-            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
-            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            string backupFullPath = target.AppFile is null ? GetFullBackupPath(target.BackupFolder) : Path.Combine(GetFullBackupPath(target.BackupFolder), target.AppFile);
+            string appFullPath = target.AppFile is null ? target.AppPath : Path.Combine(target.AppPath, target.AppFile);
             if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
             }
             if (!TargetExists(target.AppPath, FileSystemType.Directory)) {
-                target.Result = RestoreResult.NoNewProfile;
-                return;
+                if (target.RequireExisting) {
+                    target.Result = RestoreResult.NoNewProfile;
+                    return;
+                } else
+                    Directory.CreateDirectory(target.AppPath);
             }
-            if (!TargetExists(appFullPath, target.TargetType)) {
+            KillProcessTree(target.ProcessName);
+            try {
+                CopyData(backupFullPath, appFullPath, target.TargetType);
+            } catch (IOException) {
                 KillProcessTree(target.ProcessName);
                 try {
-                    CopyData(backupFullPath, target.AppPath, target.TargetType);
-                } catch (IOException) {
-                    KillProcessTree(target.ProcessName);
-                    try {
-                        CopyData(backupFullPath, target.AppPath, target.TargetType);
-                    } catch (Exception) {
-                        target.Result = RestoreResult.MergeFailed;
-                        return;
-                    }
+                    CopyData(backupFullPath, appFullPath, target.TargetType);
+                } catch (Exception) {
+                    target.Result = RestoreResult.MergeFailed;
+                    return;
                 }
-                target.Result = RestoreResult.RestoreComplete;
-                return;
             }
+            target.Result = RestoreResult.RestoreComplete;
+            return;
         }
         private void RestoreAsUType(BackupTarget target) {
             if (!File.Exists($@"{BackupRoot}\{target.BackupFolder}\asutype.config")) {
@@ -430,8 +435,7 @@ namespace UserDataBackup.Classes {
             target.Result = RestoreResult.RestoreComplete;
         }
         private void RestoreNpp(BackupTarget target) {
-            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
-            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            string backupFullPath = target.AppFile is null ? GetFullBackupPath(target.BackupFolder) : Path.Combine(GetFullBackupPath(target.BackupFolder), target.AppFile);
             if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;

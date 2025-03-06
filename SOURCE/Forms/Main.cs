@@ -17,7 +17,7 @@ namespace UserDataBackup.Forms {
         private StatusDetail _status;
         private System.Timers.Timer _timer = new System.Timers.Timer();
         private int _timerResetCount = 0;
-        private readonly int MAX_RESET_COUNT = 15;
+        private const int MAX_RESET_COUNT = 3;
         private readonly bool UNATTENDED_BACKUP = Environment.GetCommandLineArgs().Contains("silentback");
         private readonly bool UNATTENDED_RESTORE = Environment.GetCommandLineArgs().Contains("silentrest");
         private readonly bool UNATTENDED = Environment.GetCommandLineArgs().Contains("silentback") || Environment.GetCommandLineArgs().Contains("silentrest");
@@ -56,7 +56,6 @@ namespace UserDataBackup.Forms {
                 if (Process.GetProcessesByName("OneDrive").Count() == 0)
                     Process.Start(Properties.Resources.OneDriveExecutablePath);
             } else {
-                _data = new ProfileData(Program.OneDriveRoot, Program.BackupRoot);
                 _odStatus = new OneDriveStatus();
                 _status = _odStatus.GetStatus().First(s => s.LocalPath == Program.OneDriveRoot);
                 if (_status.StatusString == Properties.Resources.NoNetworkStatus) {
@@ -98,7 +97,7 @@ namespace UserDataBackup.Forms {
             if (_status.StatusString != "Up to date" && !UNATTENDED) {
                 _timerResetCount = 0;
                 Cursor = Cursors.WaitCursor;
-                _timer = new System.Timers.Timer(30000);
+                _timer = new System.Timers.Timer(15000);
                 _timer.Elapsed += CheckForSync;
                 _timer.AutoReset = true;
                 _timer.Enabled = true;

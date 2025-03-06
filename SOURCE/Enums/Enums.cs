@@ -8,7 +8,8 @@
         AsUType,
         Npp,
         AutoDest,
-        Other = 99
+        Other = 99,
+        Comment = -1
     }
     public enum RestoreResult {
         NotAttempted,

@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using SapphTools.BookmarkManager.Chromium;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Text.Json;
 using System.Reflection;
 using System.Text;
 using System.Security;
+using UserDataBackup.Enums;
 
 #nullable enable
 namespace UserDataBackup.Classes {
@@ -33,39 +33,63 @@ namespace UserDataBackup.Classes {
                 jsonText = Encoding.UTF8.GetString(Properties.Resources.BackupTargets);
             }
             BackupTargets = JsonSerializer.Deserialize<TargetCollection>(jsonText)!;
-            CheckTargets();
         }
-        private static void CopyDir(string sourcePath, string targetPath, bool recursive)  {
-            CopyDir(sourcePath, targetPath, null, recursive);
+        private static void CopyData(string sourcePath, string destinationFolder, FileSystemType type) {
+            CopyData(sourcePath, destinationFolder, type, true);
         }
-        private static void CopyDir(string sourcePath, string targetPath, string? filter, bool recursive) {
-            CopyDir(sourcePath, targetPath, filter, null, recursive);
+        private static void CopyData(string sourcePath, string destinationFolder, FileSystemType type, bool recursive) {
+            CopyData(sourcePath, destinationFolder, type, null, null, recursive);
         }
-        private static void CopyDir(string sourcePath, string targetPath, string? filter, string? exclusionFilter, bool recursive) {
+        private static void CopyData(string sourcePath, string destinationFolder, FileSystemType type, string? filter, bool recursive) {
+            CopyData(sourcePath, destinationFolder, type, filter, null, recursive);
+        }
+        private static void CopyData(string sourcePath, string destinationFolder, FileSystemType type, string? filter, string? exclusionFilter, bool recursive) {
+            if (type == FileSystemType.Unknown)
+                return;
+            if (type == FileSystemType.File) {
+                FileInfo source = new FileInfo(sourcePath);
+                if (!source.Exists)
+                    return;
+                if (!Directory.Exists(destinationFolder))
+                    Directory.CreateDirectory(destinationFolder);
+                string sourceFileName = source.Name;
+                source.CopyTo($"{destinationFolder}{Path.DirectorySeparatorChar}{sourceFileName}", true);
+                return;
+            }
+            if (type == FileSystemType.Directory) {
+                if (!Directory.Exists(sourcePath))
+                    return;
+                if (!Directory.Exists(destinationFolder))
+                    Directory.CreateDirectory(destinationFolder);
+                CopyDir(sourcePath, destinationFolder, filter, exclusionFilter, recursive);
+            }
+        }
+        private static void CopyDir(string sourcePath, string destinationPath, bool recursive) {
+            CopyDir(sourcePath, destinationPath, null, recursive);
+        }
+        private static void CopyDir(string sourcePath, string destinationPath, string? filter, bool recursive) {
+            CopyDir(sourcePath, destinationPath, filter, null, recursive);
+        }
+        private static void CopyDir(string sourcePath, string destinationPath, string? filter, string? exclusionFilter, bool recursive) {
             DirectoryInfo sourceInfo = new DirectoryInfo(sourcePath);
             if (Regex.IsMatch(sourceInfo.FullName, @"Firefox\\Profiles\\.*\\storage\\default"))
                 return;
             if (!sourceInfo.Exists)
                 throw new DirectoryNotFoundException();
             DirectoryInfo[] subSource = sourceInfo.GetDirectories();
-            if (!Directory.Exists(targetPath))
-                Directory.CreateDirectory(targetPath);
+            if (!Directory.Exists(destinationPath))
+                Directory.CreateDirectory(destinationPath);
             foreach (FileInfo file in filter is null ? sourceInfo.GetFiles() : sourceInfo.GetFiles(filter)) {
                 if (exclusionFilter != null && Regex.IsMatch(file.Name, exclusionFilter))
                     continue;
-                string filePath = Path.Combine(targetPath, file.Name);
+                string filePath = Path.Combine(destinationPath, file.Name);
                 file.CopyTo(filePath, true);
             }
             if (recursive) {
                 foreach (DirectoryInfo subDir in subSource) {
-                    string newTarget = Path.Combine(targetPath, subDir.Name);
+                    string newTarget = Path.Combine(destinationPath, subDir.Name);
                     CopyDir(subDir.FullName, newTarget, true);
                 }
-            }
-        }
-        public void CheckTargets() {
-            foreach (BackupTarget target in BackupTargets) {
-                target.Validate();
             }
         }
         private void KillProcessTree(string ProcessName) {
@@ -85,36 +109,36 @@ namespace UserDataBackup.Classes {
                 KillProcessTree(ProcessName); 
             }
         }
+        private bool TargetExists(string path, FileSystemType type) {
+            if (type == FileSystemType.File)
+                return File.Exists(path);
+            if (type == FileSystemType.Directory)
+                return Directory.Exists(path);
+            return false;
+        }
+        private string GetFullBackupPath(string path) => $@"{BackupRoot}\{path}";
         public void Backup() {
             foreach (BackupTarget target in BackupTargets) {
-                switch (target.Type) {
-                    case TargetType.Chrome when target is BrowserTarget browserTarget:
-                        BackupChrome(browserTarget);
-                        break;
-                    case TargetType.Edge when target is BrowserTarget browserTarget:
-                        BackupEdge(browserTarget);
-                        break;
-                    case TargetType.Firefox when target is BrowserTarget browserTarget:
-                        BackupFirefox(browserTarget);
-                        break;
-                    case TargetType.StickyNotes when target is ApplicationTarget appTarget:
-                        BackupStickyNotes(appTarget);
-                        break;
-                    case TargetType.OutlookSigs when target is ApplicationTarget appTarget:
-                        BackupSignatures(appTarget);
-                        break;
-                    case TargetType.AsUType when target is ApplicationTarget appTarget:
-                        BackupAsUType(appTarget);
-                        break;
-                    case TargetType.Npp when target is ApplicationTarget appTarget:
-                        BackupNpp(appTarget);
-                        break;
-                    case TargetType.AutoDest when target is ApplicationTarget appTarget:
-                        BackupAutoDest(appTarget);
-                        break;
+                if (!target.Valid)
+                    continue;
+                switch (target.App) {
+                    case TargetApp.Chrome:
+                    case TargetApp.Edge:
+                    case TargetApp.StickyNotes:
+                    case TargetApp.OutlookSigs:
+                    case TargetApp.AutoDest:
+                    case TargetApp.Other:
                     default:
-                    case TargetType.Other:
-                        BackupDefault(target);
+                        GenericBackup(target);
+                        break;
+                    case TargetApp.Firefox:
+                        BackupFirefox(target);
+                        break;
+                    case TargetApp.AsUType:
+                        BackupAsUType(target);
+                        break;
+                    case TargetApp.Npp:
+                        BackupNpp(target);
                         break;
                 }
             }
@@ -123,34 +147,28 @@ namespace UserDataBackup.Classes {
             if (!Directory.Exists(BackupRoot))
                 return false;
             foreach (BackupTarget target in BackupTargets) {
-                switch (target.Type) {
-                    case TargetType.Chrome when target is BrowserTarget browserTarget:
-                        RestoreChrome(browserTarget);
+                if (!target.Valid)
+                    continue;
+                switch (target.App) {
+                    case TargetApp.Chrome:
+                    case TargetApp.Edge:
+                        ChromiumRestore(target);
                         break;
-                    case TargetType.Edge when target is BrowserTarget browserTarget:
-                        RestoreEdge(browserTarget);
+                    case TargetApp.Firefox:
+                        RestoreFirefox(target);
                         break;
-                    case TargetType.Firefox when target is BrowserTarget browserTarget:
-                        RestoreFirefox(browserTarget);
+                    case TargetApp.AsUType:
+                        RestoreAsUType(target);
                         break;
-                    case TargetType.StickyNotes when target is ApplicationTarget appTarget:
-                        RestoreStickyNotes(appTarget);
+                    case TargetApp.Npp:
+                        RestoreNpp(target);
                         break;
-                    case TargetType.OutlookSigs when target is ApplicationTarget appTarget:
-                        RestoreSignatures(appTarget);
-                        break;
-                    case TargetType.AsUType when target is ApplicationTarget appTarget:
-                        RestoreAsUType(appTarget);
-                        break;
-                    case TargetType.Npp when target is ApplicationTarget appTarget:
-                        RestoreNpp(appTarget);
-                        break;
-                    case TargetType.AutoDest when target is ApplicationTarget appTarget:
-                        RestoreAutoDest(appTarget);
-                        break;
+                    case TargetApp.StickyNotes:
+                    case TargetApp.OutlookSigs:
+                    case TargetApp.AutoDest:
+                    case TargetApp.Other:
                     default:
-                    case TargetType.Other:
-                        RestoreDefault(target);
+                        GenericRestore(target);
                         break;
                 }
             }
@@ -160,59 +178,42 @@ namespace UserDataBackup.Classes {
                 return false;
             return true;
         }
-        private void BackupChromium(BrowserTarget target) {
-            if (!target.TargetExists || target.BrowserInfo is null)
+        private void GenericBackup(BackupTarget target) {
+            if (!TargetExists(target.AppPath, target.TargetType))
                 return;
-            if (!target.BrowserInfo.Backup_Bookmark_File.Directory.Exists)
-                target.BrowserInfo.Backup_Bookmark_File.Directory.Create();
+            string backupFolder = GetFullBackupPath(target.BackupFolder);
+            if (!Directory.Exists(backupFolder))
+                Directory.CreateDirectory(backupFolder);
             KillProcessTree(target.ProcessName);
             try {
-                target.BrowserInfo.Live_Bookmark_File.CopyTo(target.BackupFolder, true);
+                CopyData(target.AppPath, backupFolder, FileSystemType.File);
             } catch (ArgumentNullException) {
-                Debug.WriteLine("BrowserInfo.LiveBookmark_Path was null");
+                Debug.WriteLine("Unreachable.");
             } catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException) {
-                Debug.WriteLine($"Access denied to {target.BrowserInfo.LiveBackup_Path}");
+                Debug.WriteLine($"Access denied to {target.AppPath} or {backupFolder}");
             } catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is NotSupportedException) {
-                Debug.WriteLine($"LiveBackup_Path contained invalid data : {target.BrowserInfo.LiveBackup_Path}");
+                Debug.WriteLine($"Path contained invalid data : {target.AppPath} : {backupFolder}");
             }
         }
-        private void BackupChrome(BrowserTarget target) {
-            BackupChromium(target);
-        }
-        private void BackupEdge(BrowserTarget target) {
-            BackupChromium(target);
-        }
-        private void BackupFirefox(BrowserTarget target) {
-            if (!target.TargetExists || target.BrowserInfo is null)
+        private void BackupFirefox(BackupTarget target) {
+            if (!TargetExists(target.AppPath, target.TargetType))
                 return;
-            if (target.BrowserInfo.Bookmark_Path is null || target.BrowserInfo.Backup_Path is null)
-                return;
+            string backupFolder = GetFullBackupPath(target.BackupFolder);
             if (!Directory.Exists(target.BackupFolder))
                 Directory.CreateDirectory(target.BackupFolder);
             KillProcessTree(target.ProcessName);
-            CopyDir(target.BrowserInfo.Bookmark_Path, target.BrowserInfo.Backup_Path, null, @"\.com$", true);
-        }
-        private void BackupStickyNotes(ApplicationTarget target) {
-            if (!target.TargetExists || target.CheckPathInfo is null)
-                return;
-            FileInfo stickyBackup = new FileInfo($@"{BackupRoot}\{target.BackupFolder}\plum.sqlite");
-            if (!stickyBackup.Directory.Exists) {
-                stickyBackup.Directory.Create();
+            try {
+                CopyData(target.AppPath, backupFolder, FileSystemType.File, null, @"\.com$", true);
+            } catch (ArgumentNullException) {
+                Debug.WriteLine("Unreachable.");
+            } catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException) {
+                Debug.WriteLine($"Access denied to {target.AppPath} or {backupFolder}");
+            } catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is NotSupportedException) {
+                Debug.WriteLine($"Path contained invalid data : {target.AppPath} : {backupFolder}");
             }
-            KillProcessTree(target.ProcessName);
-            (target.CheckPathInfo).CopyTo(stickyBackup.FullName, true);
         }
-        private void BackupSignatures(ApplicationTarget target) {
-            if (!target.TargetExists || target.CheckPathInfo is null)
-                return;
-            DirectoryInfo sigBackup = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
-            if (!sigBackup.Exists)
-                Directory.CreateDirectory(sigBackup.FullName);
-            KillProcessTree(target.ProcessName);
-            CopyDir(target.CheckPath, sigBackup.FullName, true);
-        }
-        private void BackupAsUType(ApplicationTarget target) {
-            if (!target.TargetExists || target.CheckPathInfo is null)
+        private void BackupAsUType(BackupTarget target) {
+            if (!TargetExists(target.AppPath, target.TargetType))
                 return;
             DirectoryInfo autBackup = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
             if (!autBackup.Exists)
@@ -291,60 +292,30 @@ namespace UserDataBackup.Classes {
             CopyDir(@"C:\Users\Public\Documents\Fanix\Asutype Professional", $@"{BackupRoot}\AsUType", "*.shortcut", false);
             CopyDir(@"C:\Users\Public\Documents\Fanix\Asutype Professional", $@"{BackupRoot}\AsUType", "*.spelling", false);
         }
-        private void BackupNpp(ApplicationTarget target) {
-            if (!target.TargetExists || target.CheckPathInfo is null)
-                return;
-            if (!Directory.Exists($@"{_appdata}\Notepad++\backup"))
-                return;
-            string nppBackupFolder = $@"{BackupRoot}\{target.BackupFolder}";
-            FileInfo nppBackup = new FileInfo($@"{nppBackupFolder}\session.xml");
-            string fileTarget = $@"{nppBackupFolder}\files";
-            if (!nppBackup.Directory.Exists) {
-                nppBackup.Directory.Create();
-                Directory.CreateDirectory(fileTarget);
-            }
-            KillProcessTree(target.ProcessName);
-            (target.CheckPathInfo).CopyTo(nppBackup.FullName, true);
-            CopyDir($@"{_appdata}\Notepad++\backup", fileTarget, false);
+        private void BackupNpp(BackupTarget target) {
+            GenericBackup(target);
+            CopyDir($@"{_appdata}\Notepad++\backup", GetFullBackupPath(target.BackupFolder), false);
         }
-        private void BackupAutoDest(ApplicationTarget target) {
-            if (!target.TargetExists || target.CheckPathInfo is null)
-                return;
-            DirectoryInfo destBackup = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
-            if (!destBackup.Exists)
-                Directory.CreateDirectory(destBackup.FullName);
-            CopyDir(target.CheckPath, destBackup.FullName, false);
-
-        }
-        private void BackupDefault(BackupTarget target) {
-            if (!target.TargetExists || target.CheckPathInfo is null)
-                return;
-            DirectoryInfo destBackup = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
-            if (!destBackup.Exists)
-                Directory.CreateDirectory(destBackup.FullName);
-            CopyDir(target.CheckPath, destBackup.FullName, false);
-
-        }
-        private void RestoreChromium(BrowserTarget target) {
-            if (target.BrowserInfo is null)
-                return;
-            if (!target.BrowserInfo.Backup_Bookmark_File.Exists) {
+        private void ChromiumRestore(BackupTarget target) {
+            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
+            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
             }
-            if (!target.BrowserInfo.Live_Bookmark_File.Directory.Exists) {
+            if (!TargetExists(target.AppPath, FileSystemType.Directory)) { 
                 target.Result = RestoreResult.NoNewProfile;
                 return;
             }
-            if (!target.BrowserInfo.Live_Bookmark_File.Exists) {
+            if (!TargetExists(appFullPath, target.TargetType)) {
                 KillProcessTree(target.ProcessName);
                 try {
-                    target.BrowserInfo.Backup_Bookmark_File.CopyTo(target.BrowserInfo.Bookmark_Path);
+                    CopyData(backupFullPath, target.AppPath, target.TargetType);
                 } catch (IOException) {
                     KillProcessTree(target.ProcessName);
                     try {
-                        target.BrowserInfo.Backup_Bookmark_File.CopyTo(target.BrowserInfo.Bookmark_Path);
-                    } catch (IOException) {
+                        CopyData(backupFullPath, target.AppPath, target.TargetType);
+                    } catch (Exception) {
                         target.Result = RestoreResult.MergeFailed;
                         return;
                     }
@@ -352,16 +323,9 @@ namespace UserDataBackup.Classes {
                 target.Result = RestoreResult.RestoreComplete;
                 return;
             }
-            if (target.BrowserInfo.Bookmark_Path is null) {
-                target.Result = RestoreResult.NoNewProfile;
-                return;
-            }
-            if (target.BrowserInfo.Backup_Path is null) {
-                target.Result = RestoreResult.NoBackupExists;
-                return;
-            }
-            BookmarkFile live = new BookmarkFile(target.BrowserInfo.Bookmark_Path);
-            BookmarkFile backup = new BookmarkFile(target.BrowserInfo.Backup_Path);
+
+            BookmarkFile live = new BookmarkFile(target.AppPath);
+            BookmarkFile backup = new BookmarkFile(target.BackupFolder);
             KillProcessTree(target.ProcessName);
             try {
                 if (!live.Merge(backup, out BookmarkFile merge)) {
@@ -370,14 +334,10 @@ namespace UserDataBackup.Classes {
                 }
                 try {
                     merge.WriteFile(live.FilePath);
-                    FileInfo live_bookmarkbackup = new FileInfo(target.BrowserInfo.LiveBackup_Path);
-                    live_bookmarkbackup.Delete();
                 } catch (IOException) {
                     KillProcessTree(target.ProcessName);
                     try {
                         merge.WriteFile(live.FilePath);
-                        FileInfo live_bookmarkbackup = new FileInfo(target.BrowserInfo.LiveBackup_Path);
-                        live_bookmarkbackup.Delete();
                     } catch (IOException) {
                         target.Result = RestoreResult.MergeFailed;
                         return;
@@ -390,87 +350,59 @@ namespace UserDataBackup.Classes {
             target.Result = RestoreResult.RestoreComplete;
             return;
         }
-        private void RestoreChrome(BrowserTarget target) {
-            RestoreChromium(target);
-        }
-        private void RestoreEdge(BrowserTarget target) {
-            RestoreChromium(target);
-        }
-        private void RestoreFirefox(BrowserTarget target) {
-            if (target.BrowserInfo is null || target.BrowserInfo.Backup_Path is null || target.BrowserInfo.Bookmark_Path is null)
-                return;
-            if (!target.BrowserInfo.Backup_Bookmark_File.Exists) {
+        private void RestoreFirefox(BackupTarget target) {
+            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
+            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
-            }
-            if (!Directory.Exists(target.BrowserInfo.Bookmark_Path))
-                Directory.CreateDirectory(target.BrowserInfo.Bookmark_Path);
-            KillProcessTree(target.ProcessName);
-            try {
-                CopyDir(target.BrowserInfo.Backup_Path, target.BrowserInfo.Bookmark_Path, true);
-            } catch (IOException) {
-                KillProcessTree(target.ProcessName);
-                try {
-                    CopyDir(target.BrowserInfo.Backup_Path, target.BrowserInfo.Bookmark_Path, true);
-                } catch (IOException) {
-                    target.Result = RestoreResult.MergeFailed;
-                    return;
-                }
             }
 
-            target.Result = RestoreResult.RestoreComplete;
-        }
-        private void RestoreStickyNotes(ApplicationTarget target) {
-            if (target.CheckPathInfo is null)
-                return;
-            FileInfo stickyBackup = new FileInfo($@"{BackupRoot}\{target.BackupFolder}\plum.sqlite");
-            if (!stickyBackup.Exists) {
-                target.Result = RestoreResult.NoBackupExists;
-                return;
-            }
-            if (!Directory.Exists(target.CheckPathInfo.Directory.FullName))
-                Directory.CreateDirectory(target.CheckPathInfo.Directory.FullName);
-            stickyBackup.CopyTo(target.CheckPathInfo.FullName, true);
             KillProcessTree(target.ProcessName);
             try {
-                stickyBackup.CopyTo(target.CheckPathInfo.FullName, true);
+                CopyData(backupFullPath, target.AppPath, target.TargetType);
             } catch (IOException) {
                 KillProcessTree(target.ProcessName);
                 try {
-                    stickyBackup.CopyTo(target.CheckPathInfo.FullName, true);
-                } catch (IOException) {
+                    CopyData(backupFullPath, target.AppPath, target.TargetType);
+                } catch (Exception) {
                     target.Result = RestoreResult.MergeFailed;
                     return;
                 }
             }
             target.Result = RestoreResult.RestoreComplete;
+            return;
+
         }
-        private void RestoreSignatures(ApplicationTarget target) {
-            DirectoryInfo sigFolder = new DirectoryInfo(target.CheckPath);
-            DirectoryInfo sigBackup = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
-            if (!sigBackup.Exists) {
+        private void GenericRestore(BackupTarget target) {
+            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
+            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
             }
-            if (!sigFolder.Exists)
-                Directory.CreateDirectory(sigFolder.FullName);
-            KillProcessTree(target.ProcessName);
-            try {
-                CopyDir(sigBackup.FullName, sigFolder.FullName, true);
+            if (!TargetExists(target.AppPath, FileSystemType.Directory)) {
+                target.Result = RestoreResult.NoNewProfile;
+                return;
+            }
+            if (!TargetExists(appFullPath, target.TargetType)) {
+                KillProcessTree(target.ProcessName);
+                try {
+                    CopyData(backupFullPath, target.AppPath, target.TargetType);
+                } catch (IOException) {
+                    KillProcessTree(target.ProcessName);
+                    try {
+                        CopyData(backupFullPath, target.AppPath, target.TargetType);
+                    } catch (Exception) {
+                        target.Result = RestoreResult.MergeFailed;
+                        return;
+                    }
+                }
                 target.Result = RestoreResult.RestoreComplete;
-            } catch (IOException) {
-                KillProcessTree(target.ProcessName);
-                try {
-                    CopyDir(sigBackup.FullName, sigFolder.FullName, true);
-                    target.Result = RestoreResult.RestoreComplete;
-                } catch (IOException) {
-                    target.Result = RestoreResult.MergeFailed;
-                    return;
-                }
+                return;
             }
-            target.Result = RestoreResult.RestoreComplete;
         }
-        private void RestoreAsUType(ApplicationTarget target) {
+        private void RestoreAsUType(BackupTarget target) {
             if (!File.Exists($@"{BackupRoot}\{target.BackupFolder}\asutype.config")) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
@@ -497,88 +429,30 @@ namespace UserDataBackup.Classes {
             }
             target.Result = RestoreResult.RestoreComplete;
         }
-        private void RestoreNpp(ApplicationTarget target) {
-            FileInfo nppBackupFile = new FileInfo($@"{BackupRoot}\{target.BackupFolder}\session.xml");
-            if (!nppBackupFile.Exists) {
+        private void RestoreNpp(BackupTarget target) {
+            string backupFullPath = GetFullBackupPath(target.BackupFolder) + Path.DirectorySeparatorChar + target.AppFile;
+            string appFullPath = target.AppPath + Path.DirectorySeparatorChar + target.AppFile;
+            if (!TargetExists(backupFullPath, target.TargetType)) {
                 target.Result = RestoreResult.NoBackupExists;
                 return;
             }
-            if (target.CheckPathInfo is null)
-                return;
-            if (!Directory.Exists(target.CheckPathInfo.Directory.FullName)) {
-                target.CheckPathInfo.Directory.Create();
+
+            if (!Directory.Exists(target.AppPath)) {
+                Directory.CreateDirectory(target.AppPath);
             }
-            KillProcessTree(target.ProcessName); //FINISH TRYCATCH
+            KillProcessTree(target.ProcessName); 
             try {
-                nppBackupFile.CopyTo(target.CheckPathInfo.FullName, true);
-                DirectoryInfo nppBackupFolder = new DirectoryInfo($@"{target.CheckPathInfo.Directory.FullName}\backup");
-                if (!nppBackupFolder.Exists)
-                    Directory.CreateDirectory(nppBackupFolder.FullName);
-                CopyDir($@"{nppBackupFile.DirectoryName}\files", nppBackupFolder.FullName, false);
+                CopyData(backupFullPath, target.AppPath, FileSystemType.Directory);
             } catch (IOException) {
                 KillProcessTree(target.ProcessName);
                 try {
-                    nppBackupFile.CopyTo(target.CheckPathInfo.FullName, true);
-                    DirectoryInfo nppBackupFolder = new DirectoryInfo($@"{target.CheckPathInfo.Directory.FullName}\backup");
-                    if (!nppBackupFolder.Exists)
-                        Directory.CreateDirectory(nppBackupFolder.FullName);
-                    CopyDir($@"{nppBackupFile.DirectoryName}\files", nppBackupFolder.FullName, false);
+                    CopyData(backupFullPath, target.AppPath, FileSystemType.Directory);
                 } catch (IOException) {
                     target.Result = RestoreResult.MergeFailed;
                     return;
                 }
             }
 
-            target.Result = RestoreResult.RestoreComplete;
-        }
-        private void RestoreAutoDest(ApplicationTarget target) {
-            DirectoryInfo destFolder = new DirectoryInfo(target.CheckPath);
-            DirectoryInfo sourceFolder = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
-            if (!sourceFolder.Exists) {
-                target.Result = RestoreResult.NoBackupExists;
-                return;
-            }
-            if (!destFolder.Exists)
-                Directory.CreateDirectory(destFolder.FullName);
-            KillProcessTree(target.ProcessName);
-            try {
-                CopyDir(sourceFolder.FullName, destFolder.FullName, true);
-                target.Result = RestoreResult.RestoreComplete;
-            } catch (IOException) {
-                KillProcessTree(target.ProcessName);
-                try {
-                    CopyDir(sourceFolder.FullName, destFolder.FullName, true);
-                    target.Result = RestoreResult.RestoreComplete;
-                } catch (IOException) {
-                    target.Result = RestoreResult.MergeFailed;
-                    return;
-                }
-            }
-            target.Result = RestoreResult.RestoreComplete;
-        }
-        private void RestoreDefault(BackupTarget target) {
-            DirectoryInfo destFolder = new DirectoryInfo(target.CheckPath);
-            DirectoryInfo sourceFolder = new DirectoryInfo($@"{BackupRoot}\{target.BackupFolder}");
-            if (!sourceFolder.Exists) {
-                target.Result = RestoreResult.NoBackupExists;
-                return;
-            }
-            if (!destFolder.Exists)
-                Directory.CreateDirectory(destFolder.FullName);
-            KillProcessTree(target.ProcessName);
-            try {
-                CopyDir(sourceFolder.FullName, destFolder.FullName, true);
-                target.Result = RestoreResult.RestoreComplete;
-            } catch (IOException) {
-                KillProcessTree(target.ProcessName);
-                try {
-                    CopyDir(sourceFolder.FullName, destFolder.FullName, true);
-                    target.Result = RestoreResult.RestoreComplete;
-                } catch (IOException) {
-                    target.Result = RestoreResult.MergeFailed;
-                    return;
-                }
-            }
             target.Result = RestoreResult.RestoreComplete;
         }
     }

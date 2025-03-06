@@ -98,7 +98,7 @@ namespace UserDataBackup.Forms {
             if (_status.StatusString != "Up to date" && !UNATTENDED) {
                 _timerResetCount = 0;
                 Cursor = Cursors.WaitCursor;
-                _timer = new System.Timers.Timer(1000);
+                _timer = new System.Timers.Timer(30000);
                 _timer.Elapsed += CheckForSync;
                 _timer.AutoReset = true;
                 _timer.Enabled = true;
@@ -114,9 +114,9 @@ namespace UserDataBackup.Forms {
             StringBuilder message = new StringBuilder();
             message.AppendLine(Properties.Resources.RestoreResultMessage);
             bool nonewprofile = false;
-            foreach (var result in _data.Targets) {
-                message.AppendLine($"\t{result.Key} : {result.Value.RestoreResult}");
-                nonewprofile ^= result.Value.RestoreResult == RestoreResult.NoNewProfile;
+            foreach (var result in _data.BackupTargets.RestoreResults) {
+                message.AppendLine($"\t{result.Key} : {result.Value}");
+                nonewprofile ^= result.Value == RestoreResult.NoNewProfile;
             }
             AttendedMessageBox(message.ToString(), "User Data Restore Results", MessageBoxButtons.OK, MessageBoxIcon.Information);
             if (nonewprofile)

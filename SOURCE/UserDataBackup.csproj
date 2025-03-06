@@ -202,11 +202,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\ApplicationTarget.cs" />
     <Compile Include="Classes\BackupTarget.cs" />
-    <Compile Include="Classes\Browser.cs" />
-    <Compile Include="Classes\BrowserTarget.cs" />
+    <Compile Include="Classes\FileSystemHelper.cs" />
     <Compile Include="Enums\Enums.cs" />
+    <Compile Include="Enums\FileSystemType.cs" />
     <Compile Include="Forms\Main.cs">
       <SubType>Form</SubType>
     </Compile>

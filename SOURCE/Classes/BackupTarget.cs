@@ -1,70 +1,72 @@
-﻿using Newtonsoft.Json.Schema;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Security;
 using System.Text.Json.Serialization;
+using UserDataBackup.Enums;
 
 #nullable enable
 namespace UserDataBackup.Classes {
     public class BackupTarget : IEquatable<BackupTarget> {
         #region Fields
-        private FileInfo? _checkPathInfo;
-        private string _checkPath = "";
+        protected string _appPath = "";
+        protected string _unformattedAppPath = "";
         #endregion
         #region Const and Readonly
-        private static readonly string _localappdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        private static readonly string _appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        protected static readonly string _localappdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        protected static readonly string _appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         #endregion
         #region Properties
-        public ClassType ObjectClass { get; set; }
-        public TargetType Type { get; set; }
-        public bool Roaming { get; set; }
-        public string BackupFolder { get; set; } = "";
-        public string FriendlyName { get; set; } = "";
-        public List<string> ProcessName { get; set; } = new List<string>();
-        [JsonIgnore] public RestoreResult Result { get; internal set; } = RestoreResult.NotAttempted;
-        public string CheckPath {
-            get => _checkPath;
+
+        [JsonInclude]
+        public string? AppFile { get; set; }
+        [JsonPropertyName("AppPath")]
+        [JsonInclude]
+        public string UnformattedAppPath {
+            get => _unformattedAppPath;
             set {
-                _checkPath = value;
-                TargetExists = ValidateCheckPath(CheckPath, out _checkPathInfo) && _checkPathInfo != null && _checkPathInfo.Exists;
+                _unformattedAppPath = value;
+                _appPath = string.Format(value, Roaming ? _appdata : _localappdata);
+                TargetType = FileSystemHelper.GetFSIType(_appPath);
             }
         }
-        [JsonIgnore] public FileInfo? CheckPathInfo => _checkPathInfo;
-        [JsonIgnore] public bool TargetExists { get; internal set; } = false;
+        [JsonInclude] public string BackupFolder { get; set; } = "";
+        [JsonInclude] public string FriendlyName { get; set; } = "";
+        [JsonInclude] public List<string> ProcessName { get; set; } = new List<string>();
+        [JsonInclude] public bool Roaming { get; set; }
+        [JsonInclude] public FileSystemType TargetType { get; set; }
+        [JsonInclude] public TargetApp App { get; set; }
+        [JsonIgnore]  public RestoreResult Result { get; internal set; } = RestoreResult.NotAttempted;
+
+        [JsonIgnore]
+        public string AppPath {
+            get => _appPath;
+            set {
+                _appPath = value;
+                if (value.Contains(_localappdata)) {
+                    Roaming = false;
+                    _unformattedAppPath = value.Replace(_localappdata, @"{0}");
+                } else {
+                    Roaming = true;
+                    _unformattedAppPath = value.Replace(_appdata, @"{0}");
+                }
+                TargetType = FileSystemHelper.GetFSIType(_appPath);
+            }
+        }
+
+        [JsonIgnore]
+        public bool Valid => (AppPath != "" && BackupFolder != "" && FriendlyName != "") && ((TargetType == FileSystemType.File && !string.IsNullOrWhiteSpace(AppFile)) ||
+        (TargetType == FileSystemType.Directory));
         #endregion
         #region ctor
-        #endregion
-        #region Methods
-        private bool ValidateCheckPath(string? path, out FileInfo? info) {
-            info = null;
-            try {
-                info = new FileInfo(path);
-                return true;
-            } catch (ArgumentNullException) {
-                Debug.WriteLine("path was null");
-            } catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException) {
-                Debug.WriteLine($"Access denied to {path}");
-            } catch (Exception e) when (e is ArgumentException || e is PathTooLongException || e is NotSupportedException) {
-                Debug.WriteLine($"path contained invalid data : {path}");
-            }
-            return false;
-        }
-        public void Validate() {
-            TargetExists = ValidateCheckPath(CheckPath, out _checkPathInfo) && _checkPathInfo != null && _checkPathInfo.Exists;
-        }
         #endregion
         #region IEquitable Implementation
         public override bool Equals(object obj) => Equals(obj as BackupTarget);
         public override int GetHashCode() {
-            return Type.GetHashCode();
+            return App.GetHashCode();
         }
         public bool Equals(BackupTarget? other) {
             if (other is null)
                 return false;
-            return Type.Equals(other.Type);
+            return App.Equals(other.App);
         }
         public static bool operator ==(BackupTarget? target1, BackupTarget? target2) {
             if (ReferenceEquals(target1, target2))

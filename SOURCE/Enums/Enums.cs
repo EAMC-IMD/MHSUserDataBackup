@@ -1,5 +1,5 @@
 ﻿namespace UserDataBackup.Classes {
-    public enum TargetType {
+    public enum TargetApp {
         Chrome,
         Edge,
         Firefox,

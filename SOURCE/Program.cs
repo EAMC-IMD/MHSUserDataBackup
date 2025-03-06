@@ -9,7 +9,7 @@ namespace UserDataBackup {
 
         public static readonly string UserFolderRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         public static readonly string OneDriveRoot = Environment.GetEnvironmentVariable("OneDriveCommercial");
-        public static readonly string BackupRoot = $@"{OneDriveRoot}\Backup";
+        public static readonly string BackupRoot = $@"{OneDriveRoot}\BackupTest";
 
         static Program() {
             Assembly executingAssembly = Assembly.GetExecutingAssembly();

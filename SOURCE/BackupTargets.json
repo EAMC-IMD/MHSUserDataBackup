@@ -1,82 +1,100 @@
 [
-    {
-        "App": 0,
-        "AppFile": "Bookmarks",
-        "AppPath": "{0}\\Google\\Chrome\\User Data\\Default",
-        "BackupFolder": "Chrome",
-        "FriendlyName": "Google Chrome",
-        "ProcessName": [ "chrome" ],
-        "Roaming": false,
-        "TargetType": 0
-    },
-    {
-        "App": 1,
-        "AppFile": "Bookmarks",
-        "AppPath": "{0}\\Microsoft\\Edge\\User Data\\Default",
-        "BackupFolder": "Edge",
-        "FriendlyName": "Microsoft Edge",
-        "ProcessName": [ "msedge" ],
-        "Roaming": false,
-        "TargetType": 0
-    },
-    {
-        "App": 2,
-        "AppFile": null,
-        "AppPath": "{0}\\Mozilla\\Firefox",
-        "BackupFolder": "Firefox",
-        "FriendlyName": "Mozilla Firefox",
-        "ProcessName": [ "firefox" ],
-        "Roaming": true,
-        "TargetType": 1
-    },
-    {
-        "App": 3,
-        "AppFile": "plum.sqlite",
-        "AppPath": "{0}\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState",
-        "BackupFolder": "StickyNotes",
-        "FriendlyName": "Sticky Notes",
-        "ProcessName": [ "Microsoft.Notes" ],
-        "Roaming": false,
-        "TargetType": 0
-    },
-    {
-        "App": 4,
-        "AppFile": null,
-        "AppPath": "{0}\\Microsoft\\Signatures",
-        "BackupFolder": "Signatures",
-        "FriendlyName": "Outlook Signatures",
-        "ProcessName": [ "OUTLOOK" ],
-        "Roaming": true,
-        "TargetType": 1
-    },
-    {
-        "App": 5,
-        "AppFile": null,
-        "AppPath": "C:\\Users\\Public\\Documents\\Fanix",
-        "BackupFolder": "AsUType",
-        "FriendlyName": "Fenix AsUType",
-        "ProcessName": [ "AsutypePro32", "AsutypePro64" ],
-        "Roaming": true,
-        "TargetType": 1
-    },
-    {
-        "App": 6,
-        "AppFile": "session.xml",
-        "AppPath": "{0}\\Notepad++",
-        "BackupFolder": "npp",
-        "FriendlyName": "Notepad++",
-        "ProcessName": [ "notepad++" ],
-        "Roaming": true,
-        "TargetType": 0
-    },
-    {
-        "App": 7,
-        "AppFile": null,
-        "AppPath": "{0}\\Microsoft\\Windows\\Recent\\AutomaticDestinations",
-        "BackupFolder": "Destinations",
-        "FriendlyName": "Automatic Destinations",
-        "ProcessName": [],
-        "Roaming": true,
-        "TargetType": 1
-    }
+  {
+    "App": -1,
+    "AppFile": "If TargetType=0, this is the name the single file to target.  If not, null",
+    "AppPath": "If TargetType=1, this is the name of the folder to target. If not, parent of AppFile. %appdata% and %localappdata% are replaced with {0}.  If %localappdata%, Roaming=false",
+    "BackupFolder": "This is the name of the folder that will store backed up data",
+    "FriendlyName": "Name of application for display in UI",
+    "ProcessName": [ "Array of one or more processes assoicated with application that must be closed before operations" ],
+    "Roaming": false,
+    "TargetType": 0
+  },
+  {
+    "App": 0,
+    "AppFile": "Bookmarks",
+    "AppPath": "{0}\\Google\\Chrome\\User Data\\Default",
+    "BackupFolder": "Chrome",
+    "FriendlyName": "Google Chrome",
+    "ProcessName": [ "chrome" ],
+    "RequireExisting":  true,
+    "Roaming": false,
+    "TargetType": 0
+  },
+  {
+    "App": 1,
+    "AppFile": "Bookmarks",
+    "AppPath": "{0}\\Microsoft\\Edge\\User Data\\Default",
+    "BackupFolder": "Edge",
+    "FriendlyName": "Microsoft Edge",
+    "ProcessName": [ "msedge" ],
+    "RequireExisting": true,
+    "Roaming": false,
+    "TargetType": 0
+  },
+  {
+    "App": 2,
+    "AppFile": null,
+    "AppPath": "{0}\\Mozilla\\Firefox",
+    "BackupFolder": "Firefox",
+    "FriendlyName": "Mozilla Firefox",
+    "ProcessName": [ "firefox" ],
+    "RequireExisting": false,
+    "Roaming": true,
+    "TargetType": 1
+  },
+  {
+    "App": 3,
+    "AppFile": "plum.sqlite",
+    "AppPath": "{0}\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState",
+    "BackupFolder": "StickyNotes",
+    "FriendlyName": "Sticky Notes",
+    "ProcessName": [ "Microsoft.Notes" ],
+    "RequireExisting": false,
+    "Roaming": false,
+    "TargetType": 0
+  },
+  {
+    "App": 4,
+    "AppFile": null,
+    "AppPath": "{0}\\Microsoft\\Signatures",
+    "BackupFolder": "Signatures",
+    "FriendlyName": "Outlook Signatures",
+    "ProcessName": [ "OUTLOOK" ],
+    "RequireExisting": false,
+    "Roaming": true,
+    "TargetType": 1
+  },
+  {
+    "App": 5,
+    "AppFile": null,
+    "AppPath": "C:\\Users\\Public\\Documents\\Fanix",
+    "BackupFolder": "AsUType",
+    "FriendlyName": "Fenix AsUType",
+    "ProcessName": [ "AsutypePro32", "AsutypePro64" ],
+    "RequireExisting": false,
+    "Roaming": true,
+    "TargetType": 1
+  },
+  {
+    "App": 6,
+    "AppFile": "session.xml",
+    "AppPath": "{0}\\Notepad++",
+    "BackupFolder": "npp",
+    "FriendlyName": "Notepad++",
+    "ProcessName": [ "notepad++" ],
+    "RequireExisting": false,
+    "Roaming": true,
+    "TargetType": 0
+  },
+  {
+    "App": 7,
+    "AppFile": null,
+    "AppPath": "{0}\\Microsoft\\Windows\\Recent\\AutomaticDestinations",
+    "BackupFolder": "Destinations",
+    "FriendlyName": "Automatic Destinations",
+    "ProcessName": [],
+    "RequireExisting": false,
+    "Roaming": true,
+    "TargetType": 1
+  }
 ]

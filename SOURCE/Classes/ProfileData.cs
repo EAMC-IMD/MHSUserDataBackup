@@ -328,21 +328,33 @@ namespace UserDataBackup.Classes {
                 target.Result = RestoreResult.RestoreComplete;
                 return;
             }
-
-            BookmarkFile live = new BookmarkFile(appFullPath);
-            BookmarkFile backup = new BookmarkFile(backupFullPath);
+            string liveJson, backupJson;
+            try {
+                liveJson = File.ReadAllText(appFullPath);
+                backupJson = File.ReadAllText(backupFullPath);
+            } catch {
+                target.Result = RestoreResult.MergeFailed;
+                return;
+            }
+            if (BookmarkFile.Deserialize(liveJson, out BookmarkFile? live) || live is null) {
+                target.Result = RestoreResult.MergeFailed;
+                return;
+            }
+            if (BookmarkFile.Deserialize(backupFullPath, out BookmarkFile? backup) || backup is null) {
+                target.Result = RestoreResult.MergeFailed;
+                return;
+            }
             KillProcessTree(target.ProcessName);
             try {
-                if (!live.Merge(backup, out BookmarkFile merge)) {
-                    target.Result = RestoreResult.MergeFailed;
-                    return;
-                }
+                live.Merge(backup);
                 try {
-                    merge.WriteFile(live.FilePath);
+                    string json = live.Serialize();
+                    File.WriteAllText(appFullPath, json);
                 } catch (IOException) {
                     KillProcessTree(target.ProcessName);
                     try {
-                        merge.WriteFile(live.FilePath);
+                        string json = live.Serialize();
+                        File.WriteAllText(appFullPath, json);
                     } catch (IOException) {
                         target.Result = RestoreResult.MergeFailed;
                         return;

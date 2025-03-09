@@ -130,9 +130,6 @@
   <data name="DHA_Backup_Utility" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\EAMC Backup Utility.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Newtonsoft_Json" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Newtonsoft.Json.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="NoNetworkMessage" xml:space="preserve">
     <value>This program backs data up to OneDrive.  However, you do not currently have an active network connection. You can still run the backup, and it will be queued for update to OneDrive next time you connect. You should NOT treat this backup as complete until you are connected back to the MHS network, and your OneDrive icon shows 'Up to Date'.</value>
   </data>

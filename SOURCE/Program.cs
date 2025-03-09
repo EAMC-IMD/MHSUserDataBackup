@@ -14,7 +14,6 @@ namespace UserDataBackup {
         static Program() {
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
             _ = Assembly.Load(Properties.Resources.SapphTools_BookmarkManager_Chromium);
-            _ = Assembly.Load(Properties.Resources.Newtonsoft_Json);
             _ = Assembly.Load(Properties.Resources.OneDrive);
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
@@ -46,8 +45,6 @@ namespace UserDataBackup {
             //    case "SapphTools_BookmarkManager_Chromium.resources, Version=1.0.0.0, Culture=en-US, PublicKeyToken=null":
             //    case "SapphTools_BookmarkManager_Chromium, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null":
             //        return Assembly.Load(Properties.Resources.SapphTools_BookmarkManager_Chromium);
-            //    case "Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed":
-            //        return Assembly.Load(Properties.Resources.Newtonsoft_Json);
             //    default:
             //        throw new NullReferenceException("Unknown assembly.");
             //}

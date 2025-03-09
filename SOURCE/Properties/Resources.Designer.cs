@@ -99,16 +99,6 @@ namespace UserDataBackup.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] Newtonsoft_Json {
-            get {
-                object obj = ResourceManager.GetObject("Newtonsoft_Json", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to This program backs data up to OneDrive.  However, you do not currently have an active network connection. You can still run the backup, and it will be queued for update to OneDrive next time you connect. You should NOT treat this backup as complete until you are connected back to the MHS network, and your OneDrive icon shows &apos;Up to Date&apos;..
         /// </summary>
         internal static string NoNetworkMessage {

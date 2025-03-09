@@ -72,7 +72,8 @@
       <HintPath>Resources\OneDrive.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SapphTools.BookmarkManager.Chromium">
+    <Reference Include="SapphTools.BookmarkManager.Chromium, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>.\SapphTools.BookmarkManager.Chromium.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -283,9 +284,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="SapphTools.BookmarkManager.Chromium">
-      <Version>1.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
